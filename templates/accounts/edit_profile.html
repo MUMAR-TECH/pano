@@ -1,0 +1,193 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block dashboard_title %}Edit Profile{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card shadow-lg rounded-3">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(45deg, #4e73df, #36b9cc);">
+                    <h3 class="mb-0 font-weight-bold"><i class="fas fa-user-edit me-2"></i>Edit Profile</h3>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" class="needs-validation" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0 text-primary"><i class="fas fa-camera me-2"></i>Profile Picture</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="text-center mb-4">
+                                    <div class="position-relative d-inline-block">
+                                        {% if form.profile_picture.value %}
+                                            <img src="{{ form.profile_picture.value.url }}" 
+                                                 alt="Profile Picture" 
+                                                 class="rounded-circle preview-image"
+                                                 id="profilePreview"
+                                                 style="width: 150px; height: 150px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                                 style="width: 150px; height: 150px;">
+                                                <i class="fas fa-user fa-4x text-primary"></i>
+                                            </div>
+                                        {% endif %}
+                                        <label for="{{ form.profile_picture.id_for_label }}" 
+                                               class="position-absolute bottom-0 end-0 mb-2 me-2 btn btn-sm btn-primary rounded-circle">
+                                            <i class="fas fa-camera"></i>
+                                            <input type="file" 
+                                                   name="{{ form.profile_picture.name }}"
+                                                   id="{{ form.profile_picture.id_for_label }}"
+                                                   accept="image/*"
+                                                   class="d-none"
+                                                   onchange="previewImage(this);">
+                                        </label>
+                                    </div>
+                                    {% if form.profile_picture.errors %}
+                                        <div class="text-danger mt-2">
+                                            {{ form.profile_picture.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Information Section -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0 text-primary"><i class="fas fa-user me-2"></i>Personal Information</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">First Name</label>
+                                        <input type="text" name="{{ form.first_name.name }}" class="form-control" value="{{ form.first_name.value|default:'' }}" id="{{ form.first_name.id_for_label }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Last Name</label>
+                                        <input type="text" name="{{ form.last_name.name }}" class="form-control" value="{{ form.last_name.value|default:'' }}" id="{{ form.last_name.id_for_label }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Details Section -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0 text-primary"><i class="fas fa-address-card me-2"></i>Contact Details</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Phone Number</label>
+                                        <input type="tel" name="{{ form.phone_number.name }}" class="form-control" value="{{ form.phone_number.value|default:'' }}" id="{{ form.phone_number.id_for_label }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Address</label>
+                                        <input type="text" name="{{ form.address.name }}" class="form-control" value="{{ form.address.value|default:'' }}" id="{{ form.address.id_for_label }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- About Me Section -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0 text-primary"><i class="fas fa-info-circle me-2"></i>About Me</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <label class="form-label fw-bold">Bio</label>
+                                <textarea name="{{ form.bio.name }}" class="form-control" id="{{ form.bio.id_for_label }}" rows="4">{{ form.bio.value|default:'' }}</textarea>
+                                <small class="text-muted mt-2 d-block">Share a little about yourself with the community</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-secondary rounded-pill px-4">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const preview = document.getElementById('profilePreview');
+            if (preview) {
+                preview.src = e.target.result;
+            } else {
+                const newPreview = document.createElement('img');
+                newPreview.src = e.target.result;
+                newPreview.id = 'profilePreview';
+                newPreview.classList.add('rounded-circle', 'preview-image');
+                newPreview.style.width = '150px';
+                newPreview.style.height = '150px';
+                newPreview.style.objectFit = 'cover';
+                input.parentElement.parentElement.querySelector('.fa-user').parentElement.replaceWith(newPreview);
+            }
+        };
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+
+<style>
+.bg-gradient {
+    background-size: 200% auto;
+    transition: 0.5s;
+}
+.bg-gradient:hover {
+    background-position: right center;
+}
+.form-control:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.preview-image {
+    transition: all 0.3s ease;
+    border: 3px solid #fff;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+.btn-primary.rounded-circle {
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-primary.rounded-circle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+</style>
+{% endblock %}

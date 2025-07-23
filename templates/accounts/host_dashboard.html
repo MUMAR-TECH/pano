@@ -1,0 +1,749 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Host Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-blue: #0d6efd;
+        --dark: #212529;
+        --light: #f8f9fc;
+        --border-color: #e3e6f0;
+    }
+
+    /* Container spacing */
+    .container-fluid {
+        padding: 2rem;
+    }
+
+    /* Card styles */
+    .card {
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        background: white;
+        box-shadow: 0 0.15rem 1.75rem rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+        background: white !important;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 1.5rem;
+        color: var(--dark);
+    }
+
+    /* Update all colored headers to white with dark text */
+    .bg-primary, .bg-success, .bg-info, .bg-warning {
+        background-color: white !important;
+        color: var(--dark) !important;
+    }
+
+    /* Button styles */
+    .btn-primary {
+        background-color: var(--primary-blue);
+        border-color: var(--primary-blue);
+    }
+
+    .btn-outline-primary {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+    }
+
+    .btn-outline-primary:hover {
+        background-color: var(--primary-blue);
+        color: white;
+    }
+
+    /* Border left cards */
+    .border-left-primary,
+    .border-left-success,
+    .border-left-info,
+    .border-left-warning {
+        border-left: 4px solid var(--dark) !important;
+    }
+
+    /* Stats icon */
+    .text-gray-300 {
+        color: var(--dark) !important;
+        opacity: 0.2;
+    }
+
+    /* Badge styles */
+    .badge {
+        background-color: var(--light) !important;
+        color: var(--dark) !important;
+        border: 1px solid var(--border-color);
+    }
+
+    .badge.bg-primary {
+        background-color: var(--primary-blue) !important;
+        color: white !important;
+        border: none;
+    }
+
+    /* Table styles */
+    .table th {
+        background-color: var(--light);
+        color: var(--dark);
+        border-color: var(--border-color);
+    }
+
+    .table td {
+        border-color: var(--border-color);
+    }
+
+    /* Charts */
+    .chart-container {
+        padding: 1rem;
+        height: 300px;
+        background-color: white;
+    }
+
+    /* Text colors */
+    .text-primary, .text-success, .text-info, .text-warning {
+        color: var(--dark) !important;
+    }
+
+    .text-muted {
+        color: #6c757d !important;
+    }
+
+    /* Icons */
+    .fa-3x, .fa-2x {
+        color: var(--dark);
+        opacity: 0.8;
+    }
+
+    /* List group */
+    .list-group-item {
+        border-color: var(--border-color);
+    }
+
+    /* Action buttons */
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.25rem;
+    }
+
+    .btn-info, .btn-success, .btn-warning {
+        background-color: white;
+        border: 1px solid var(--border-color);
+        color: var(--dark);
+    }
+
+    .btn-info:hover, .btn-success:hover, .btn-warning:hover {
+        background-color: var(--light);
+        border-color: var(--border-color);
+        color: var(--dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Dashboard Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Host Dashboard</h1>
+        <div>
+            <a href="{% url 'memberships:create_bundle' %}" class="btn btn-sm btn-success mr-2">
+                <i class="fas fa-plus mr-1"></i> New Bundle
+            </a>
+            <a href="{% url 'memberships:create_tier' %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus mr-1"></i> New Tier
+            </a>
+        </div>
+    </div>
+
+    <!-- Membership Management Section -->
+    <div class="row mb-4">
+        <!-- Bundles Section -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-boxes mr-1"></i> Your Bundles
+                    </h6>
+                    <span>
+                        <i class="fas fa-boxes mr-1"></i> 
+                        Total: {{ bundles.count }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    {% if bundles %}
+                        <div class="row">
+                            {% for bundle in bundles %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card tier-card h-100 position-relative">
+                                    {% if bundle.is_active %}
+                                        <span class="badge bg-success bundle-badge">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary bundle-badge">Inactive</span>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ bundle.name }}</h5>
+                                        <p class="card-text small text-muted">{{ bundle.description|truncatechars:60 }}</p>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="badge bg-info">
+                                                {{ bundle.tiers.count }} Tier{{ bundle.tiers.count|pluralize }}
+                                            </span>
+                                            <div>
+                                                <a href="{% url 'memberships:edit_bundle' bundle.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'memberships:toggle_bundle_status' bundle.id %}" class="btn btn-sm btn-outline-{% if bundle.is_active %}warning{% else %}success{% endif %}">
+                                                    <i class="fas fa-{% if bundle.is_active %}pause{% else %}play{% endif %}"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'memberships:manage_bundles' %}" class="btn btn-sm btn-primary">Manage All Bundles</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-boxes fa-4x text-muted mb-3"></i>
+                            <h5>No Bundles Created Yet</h5>
+                            <p class="text-muted">Create your first bundle to organize your membership tiers</p>
+                            <a href="{% url 'memberships:create_bundle' %}" class="btn btn-primary">
+                                <i class="fas fa-plus mr-2"></i> Create Bundle
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tiers Section -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-success text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-crown mr-1"></i> Your Tiers
+                    </h6>
+                    <span>
+                        <i class="fas fa-users mr-1"></i> 
+                        Members: {{ recent_memberships.count }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    {% if recent_memberships %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Tier</th>
+                                        <th>Price</th>
+                                        <th>Members</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for membership in recent_memberships|slice:":5" %}
+                                        <tr>
+                                            <td>{{ membership.tier.name }}</td>
+                                            <td>${{ membership.tier.price }}</td>
+                                            <td>{{ membership.tier.members.count }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if membership.is_active %}success{% else %}secondary{% endif %}">
+                                                    {% if membership.is_active %}Active{% else %}Inactive{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'memberships:edit_tier' membership.tier.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'memberships:tier_analytics' membership.tier.id %}" class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-chart-line"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'memberships:manage_tiers' %}" class="btn btn-sm btn-success">Manage All Tiers</a>
+                            <a href="{% url 'memberships:all_tiers_analytics' %}" class="btn btn-sm btn-info">View Analytics</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-crown fa-4x text-muted mb-3"></i>
+                            <h5>No Membership Tiers Yet</h5>
+                            <p class="text-muted">Create your first membership tier to start earning recurring revenue</p>
+                            <a href="{% url 'memberships:create_tier' %}" class="btn btn-success">
+                                <i class="fas fa-plus mr-2"></i> Create Tier
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Membership Status Section -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-chart-pie mr-1"></i> Membership Analytics
+                    </h6>
+                    <a href="{% url 'memberships:all_tiers_analytics' %}" class="btn btn-sm btn-light">
+                        <i class="fas fa-expand mr-1"></i> Full Analytics
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Revenue Summary -->
+                        <div class="col-md-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Monthly Recurring Revenue</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                ${{ monthly_revenue|default:"0"|floatformat:2 }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Members -->
+                        <div class="col-md-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Active Members</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_members_count }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Tier -->
+                        <div class="col-md-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Most Popular Tier</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                {{ popular_tier.name|default:"N/A" }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-crown fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h6 class="m-0 font-weight-bold text-primary">Tier Distribution</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-pie pt-4">
+                                        <canvas id="tierDistributionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h6 class="m-0 font-weight-bold text-primary">Recent Members</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if recent_memberships %}
+                                        <div class="list-group">
+                                            {% for membership in recent_memberships|slice:":5" %}
+                                                <div class="list-group-item list-group-item-action">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div>
+                                                            <h6 class="mb-1">{{ membership.user.username }}</h6>
+                                                            <small class="text-muted">
+                                                                Joined {{ membership.start_date|timesince }} ago
+                                                            </small>
+                                                        </div>
+                                                        <span class="badge bg-primary">
+                                                            {{ membership.tier.name }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <a href="{% url 'memberships:manage_tiers' %}" class="btn btn-sm btn-primary">
+                                                View All Members
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center py-4">
+                                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted">No members yet</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- Add this section after the Membership Analytics section -->
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-warning text-white">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-calendar-alt mr-1"></i> Your Events
+                </h6>
+                <a href="{% url 'events:manage_tickets' %}" class="btn btn-sm btn-light">
+                    <i class="fas fa-cog mr-1"></i> Manage All Events
+                </a>
+            </div>
+            <div class="card-body">
+                {% if hosted_events %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Date</th>
+                                    <th>Location</th>
+                                    <th>Attendees</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in hosted_events|slice:":5" %}
+                                    <tr>
+                                        <td>{{ event.title }}</td>
+                                        <td>{{ event.date|date:"M d, Y" }}</td>
+                                        <td>{{ event.location|truncatechars:20 }}</td>
+                                        <td>{{ event.attendees.count }}/{{ event.capacity }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if event.date > current_date %}success{% else %}secondary{% endif %}">
+                                                {% if event.date > current_date %}Upcoming{% else %}Past{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'events:event_detail' event.id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'events:event_registrations' event.id %}" class="btn btn-sm btn-success">
+                                                <i class="fas fa-users"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'events:organizer_dashboard' %}" class="btn btn-warning">
+                            <i class="fas fa-calendar-alt mr-2"></i> View All Events
+                        </a>
+                        <a href="{% url 'events:create_event' %}" class="btn btn-primary">
+                            <i class="fas fa-plus mr-2"></i> Create New Event
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-alt fa-4x text-muted mb-3"></i>
+                        <h5>No Events Created Yet</h5>
+                        <p class="text-muted">Create your first event to start selling tickets</p>
+                        <a href="{% url 'events:create_event' %}" class="btn btn-primary">
+                            <i class="fas fa-plus mr-2"></i> Create Event
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <!-- Upcoming Events Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Upcoming Events</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ upcoming_events.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registrations Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Registrations</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ event_registrations }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Your Products</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ host_products.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-box-open fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Sales</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                ${{ product_sales.total_sales|default:"0"|floatformat:2 }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Upcoming Events -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Upcoming Events</h6>
+                    <div>
+                        <a href="{% url 'events:create_event' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> New Event
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Date</th>
+                                        <th>Attendees</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for event in upcoming_events|slice:":5" %}
+                                        <tr>
+                                            <td>{{ event.title }}</td>
+                                            <td>{{ event.date|date:"M d, Y" }}</td>
+                                            <td>{{ event.attendees.count }}</td>
+                                            <td>
+                                                <a href="{% url 'events:event_detail' event.id %}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'events:event_registrations' event.id %}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-users"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'events:organizer_dashboard' %}" class="btn btn-sm btn-primary">View All Events</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">You don't have any upcoming events</p>
+                            <a href="{% url 'events:create_event' %}" class="btn btn-primary">
+                                Create Your First Event
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Best Selling Products -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Best Selling Products</h6>
+                    <a href="{% url 'store:create_product' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> New Product
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if best_selling %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Sold</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in best_selling %}
+                                        <tr>
+                                            <td>{{ product.name }}</td>
+                                            <td>${{ product.price }}</td>
+                                            <td>{{ product.total_sold|default:"0" }}</td>
+                                            <td>${{ product.total_sold|multiply:product.price|floatformat:2 }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'store:product_list' %}" class="btn btn-sm btn-primary">View All Products</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">You don't have any products yet</p>
+                            <a href="{% url 'store:create_product' %}" class="btn btn-primary">
+                                Add Your First Product
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Tier Distribution Chart
+    const tierCtx = document.getElementById('tierDistributionChart').getContext('2d');
+    const tierChart = new Chart(tierCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Basic', 'Standard', 'Premium', 'VIP'],
+            datasets: [{
+                data: [30, 25, 20, 25],
+                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a'],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            },
+            cutout: '70%',
+        },
+    });
+
+    // Sales Chart
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Event Registrations',
+                data: [12, 19, 3, 5, 2, 3, 15, 8, 7, 10, 14, 9],
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(78, 115, 223, 1)'
+            }, {
+                label: 'Product Sales',
+                data: [8, 15, 10, 12, 7, 9, 18, 6, 11, 14, 16, 12],
+                backgroundColor: 'rgba(28, 200, 138, 0.05)',
+                borderColor: 'rgba(28, 200, 138, 1)',
+                pointBackgroundColor: 'rgba(28, 200, 138, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(28, 200, 138, 1)'
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

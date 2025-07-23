@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Properties - Hotel Booking{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-search"></i> Find Properties</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if user.is_authenticated and user.userprofile.user_type == 'vendor' %}
+        <a href="{% url 'add_property' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Add Property
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Search and Filter Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="Search properties..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="type">
+                    <option value="">All Types</option>
+                    <option value="hotel" {% if request.GET.type == 'hotel' %}selected{% endif %}>Hotel</option>
+                    <option value="lodge" {% if request.GET.type == 'lodge' %}selected{% endif %}>Lodge</option>
+                    <option value="motel" {% if request.GET.type == 'motel' %}selected{% endif %}>Motel</option>
+                    <option value="guesthouse" {% if request.GET.type == 'guesthouse' %}selected{% endif %}>Guest House</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="city" 
+                       placeholder="City..." value="{{ request.GET.city }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Properties Grid -->
+<div class="row">
+    {% for property in properties %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if property.images.first %}
+            <img src="{{ property.images.first.image.url }}" class="card-img-top" 
+                 style="height: 200px; object-fit: cover;" alt="{{ property.name }}">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                 style="height: 200px;">
+                <i class="fas fa-image fa-3x text-muted"></i>
+            </div>
+            {% endif %}
+            
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ property.name }}</h5>
+                <p class="card-text text-muted">
+                    <i class="fas fa-map-marker-alt"></i> {{ property.city }}, {{ property.country }}
+                </p>
+                <p class="card-text">{{ property.description|truncatewords:20 }}</p>
+                
+                <div class="mt-auto">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-primary">{{ property.get_property_type_display }}</span>
+                        {% if property.avg_rating %}
+                        <span class="text-warning">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= property.avg_rating %}
+                                <i class="fas fa-star"></i>
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h6 text-success mb-0">
+                            {% if property.min_price %}
+                            From ${{ property.min_price }}/night
+                            {% endif %}
+                        </span>
+                        <a href="{% url 'property_detail' property.pk %}" class="btn btn-primary">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Properties Found</h4>
+            <p class="text-muted">Try adjusting your search criteria.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav aria-label="Properties pagination">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.type %}type={{ request.GET.type }}&{% endif %}{% if request.GET.city %}city={{ request.GET.city }}&{% endif %}page=1">First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.type %}type={{ request.GET.type }}&{% endif %}{% if request.GET.city %}city={{ request.GET.city }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item active">
+            <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        </li>
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.type %}type={{ request.GET.type }}&{% endif %}{% if request.GET.city %}city={{ request.GET.city }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.type %}type={{ request.GET.type }}&{% endif %}{% if request.GET.city %}city={{ request.GET.city }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Last</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

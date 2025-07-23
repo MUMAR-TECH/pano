@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load account %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2>{% trans "Confirm E-mail Address" %}</h2>
+                    
+                    {% user_display user as user_display %}
+                    <p>{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}
+                    You're receiving this e-mail because user {{ user_display }} has given your e-mail address to register an account on {{ site_domain }}.
+                    {% endblocktrans %}</p>
+                    
+                    <p>{% trans "To confirm this is correct, go to" %} <a href="{{ activate_url }}">{{ activate_url }}</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

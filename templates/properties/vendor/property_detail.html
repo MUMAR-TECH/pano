@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ property.name }} - Management{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ property.name }}</h1>
+        <div>
+            <a href="{% url 'property_update' property.pk %}" class="btn btn-warning">Edit Property</a>
+            <a href="{% url 'add_room' property.pk %}" class="btn btn-primary">Add Room</a>
+        </div>
+    </div>
+
+    <!-- Property Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Bookings</h5>
+                    <h2>{{ total_bookings }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Confirmed Bookings</h5>
+                    <h2>{{ confirmed_bookings }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue</h5>
+                    <h2>${{ total_revenue|default:0|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Average Rating</h5>
+                    <h2>{{ avg_rating|default:0|floatformat:1 }}/5.0</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rooms Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Rooms</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Capacity</th>
+                            <th>Price/Night</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for room in rooms %}
+                        <tr>
+                            <td>{{ room.name }}</td>
+                            <td>{{ room.get_room_type_display }}</td>
+                            <td>{{ room.capacity }}</td>
+                            <td>${{ room.price_per_night }}</td>
+                            <td>
+                                {% if room.is_available %}
+                                <span class="badge bg-success">Available</span>
+                                {% else %}
+                                <span class="badge bg-danger">Unavailable</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'room_update' room.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No rooms added yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings Section -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Recent Bookings</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Guest</th>
+                            <th>Room</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.guest_name }}</td>
+                            <td>{{ booking.room.name }}</td>
+                            <td>{{ booking.check_in_date }}</td>
+                            <td>{{ booking.check_out_date }}</td>
+                            <td>
+                                <span class="badge bg-{{ booking.status|yesno:'success,warning,danger' }}">
+                                    {{ booking.get_status_display }}
+                                </span>
+                            </td>
+                            <td>${{ booking.total_amount }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No bookings yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

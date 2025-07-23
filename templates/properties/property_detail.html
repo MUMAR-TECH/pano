@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ property.name }} - Hotel Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Property Images -->
+        {% if property.images.all %}
+        <div id="propertyCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for image in property.images.all %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img src="{{ image.image.url }}" class="d-block w-100" 
+                         style="height: 400px; object-fit: cover;" alt="{{ image.caption }}">
+                </div>
+                {% endfor %}
+            </div>
+            {% if property.images.count > 1 %}
+            <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="bg-light d-flex align-items-center justify-content-center mb-4" style="height: 400px;">
+            <i class="fas fa-image fa-5x text-muted"></i>
+        </div>
+        {% endif %}
+        
+        <!-- Property Details -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h2>{{ property.name }}</h2>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-map-marker-alt"></i> {{ property.address }}, {{ property.city }}, {{ property.country }}
+                        </p>
+                        <span class="badge bg-primary fs-6">{{ property.get_property_type_display }}</span>
+                    </div>
+                    {% if avg_rating %}
+                    <div class="text-end">
+                        <div class="text-warning mb-1">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_rating %}
+                                <i class="fas fa-star"></i>
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">{{ reviews.count }} review{{ reviews.count|pluralize }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <p>{{ property.description }}</p>
+                
+                <!-- Amenities -->
+                <h5><i class="fas fa-star"></i> Amenities</h5>
+                <div class="row mb-3">
+                    {% if property.wifi %}<div class="col-md-4"><i class="fas fa-wifi text-success"></i> Free WiFi</div>{% endif %}
+                    {% if property.parking %}<div class="col-md-4"><i class="fas fa-parking text-success"></i> Parking</div>{% endif %}
+                    {% if property.restaurant %}<div class="col-md-4"><i class="fas fa-utensils text-success"></i> Restaurant</div>{% endif %}
+                    {% if property.gym %}<div class="col-md-4"><i class="fas fa-dumbbell text-success"></i> Gym</div>{% endif %}
+                    {% if property.pool %}<div class="col-md-4"><i class="fas fa-swimming-pool text-success"></i> Pool</div>{% endif %}
+                    {% if property.spa %}<div class="col-md-4"><i class="fas fa-spa text-success"></i> Spa</div>{% endif %}
+                    {% if property.pets_allowed %}<div class="col-md-4"><i class="fas fa-paw text-success"></i> Pet Friendly</div>{% endif %}
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="border-top pt-3">
+                    <h6><i class="fas fa-phone"></i> Contact Information</h6>

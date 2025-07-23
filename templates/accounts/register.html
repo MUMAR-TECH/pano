@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load form_tags %}
+{% block title %}
+    {% if request.resolver_match.url_name == 'register_host' %}
+        Register Host | Eventify
+    {% else %}
+        Register | Eventify
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        {% if request.resolver_match.url_name == 'register_host' %}
+                            <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
+                            <h2 class="fw-bold">Become a Host</h2>
+                            <p class="text-muted">Start organizing events on Eventify</p>
+                        {% else %}
+                            <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                            <h2 class="fw-bold">Create Account</h2>
+                            <p class="text-muted">Join Eventify today</p>
+                        {% endif %}
+                    </div>
+
+                    {% if messages %}
+                        <div class="alert alert-warning">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Username Field -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" name="username" id="username" class="form-control" 
+                                   placeholder="Choose a username" value="{{ form.username.value|default_if_none:'' }}" required>
+                            {% if form.username.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email Field -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" name="email" id="email" class="form-control" 
+                                   placeholder="Enter your email" value="{{ form.email.value|default_if_none:'' }}" required>
+                            <small class="form-text text-muted d-block mt-2">
+                                <b>Valid email for account verification</b>
+                            </small>
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-3">
+                            <label for="password1" class="form-label">Password</label>
+                            <input type="password" name="password1" id="password1" class="form-control" 
+                                   placeholder="Enter a password" required>
+                            <small class="form-text text-muted d-block mt-2">
+                                <b>Min 8 chars with letters, numbers & symbols</b>
+                            </small>
+                            {% if form.password1.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password1.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="mb-3">
+                            <label for="password2" class="form-label">Confirm Password</label>
+                            <input type="password" name="password2" id="password2" class="form-control" 
+                                   placeholder="Confirm your password" required>
+                            
+                            {% if form.password2.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password2.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="mb-0">Already have an account?</p>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary mt-2">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'accounts/shared/auth_styles.html' %}
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 15px;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        padding: 12px;
+        border: 1px solid #ced4da;
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+    
+    .btn-primary {
+        border-radius: 8px;
+        padding: 12px;
+    }
+    
+    .btn-outline-primary {
+        border-radius: 8px;
+        padding: 8px 20px;
+    }
+</style>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,702 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}My Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .event-reminder-btn {
+        cursor: pointer;
+    }
+    .event-reminder-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .event-status-badge {
+        font-size: 0.8rem;
+    }
+    .membership-card {
+        transition: all 0.3s ease;
+    }
+    .membership-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .benefit-icon {
+        width: 24px;
+        text-align: center;
+        margin-right: 8px;
+    }
+    .chat-group-card {
+        border-left: 4px solid #4e73df;
+    }
+    .progress-thin {
+        height: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Dashboard Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">My Dashboard</h1>
+        <div>
+            {% if active_memberships %}
+                <span class="badge bg-success">
+                    {{ active_memberships.count }} Active Membership{{ active_memberships.count|pluralize }}
+                </span>
+            {% else %}
+                <a href="{% url 'memberships:membership_list' %}" class="btn btn-sm btn-primary">
+                    Get Membership
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <!-- Membership Status Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Active Memberships</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_memberships.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-crown fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Attending Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Events Attending</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ attending_events.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Upcoming Events</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ upcoming_events.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Items Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Cart Items</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ cart_items.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Membership Section -->
+    {% if active_memberships %}
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-crown mr-1"></i> Your Memberships
+                    </h6>
+                    <a href="{% url 'memberships:my_memberships' %}" class="btn btn-sm btn-light">
+                        <i class="fas fa-expand mr-1"></i> Manage All
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for membership in active_memberships %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card membership-card h-100">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">{{ membership.tier.name }}</h5>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <h6 class="text-primary">{{ membership.tier.bundle.name }}</h6>
+                                        <p class="small text-muted">{{ membership.tier.bundle.description|truncatechars:100 }}</p>
+                                    </div>
+                                    
+                                    <!-- Membership Progress -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between small mb-1">
+                                            <span>Membership Progress</span>
+                                            <span>{{ membership.days_remaining }} days remaining ({{ membership.percent_remaining }}%)</span>
+                                        </div>
+                                        <div class="progress progress-thin mb-3">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                style="width: {{ membership.percent_remaining }}%" 
+                                                aria-valuenow="{{ membership.percent_remaining }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="small text-muted">
+                                            Started: {{ membership.start_date|date:"M d, Y" }} | 
+                                            Expires: {{ membership.end_date|date:"M d, Y" }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Tier Benefits -->
+                                    <div class="mb-3">
+                                        <h6 class="text-primary">Your Benefits:</h6>
+                                        <ul class="list-unstyled">
+                                            {% if membership.tier.ticket_discount > 0 %}
+                                            <li class="mb-2">
+                                                <span class="benefit-icon"><i class="fas fa-ticket-alt text-success"></i></span>
+                                                {{ membership.tier.ticket_discount }}% Ticket Discount
+                                            </li>
+                                            {% endif %}
+                                            {% if membership.tier.merch_discount > 0 %}
+                                            <li class="mb-2">
+                                                <span class="benefit-icon"><i class="fas fa-tshirt text-info"></i></span>
+                                                {{ membership.tier.merch_discount }}% Merchandise Discount
+                                            </li>
+                                            {% endif %}
+                                            {% if membership.tier.early_access_days > 0 %}
+                                            <li class="mb-2">
+                                                <span class="benefit-icon"><i class="fas fa-clock text-warning"></i></span>
+                                                {{ membership.tier.early_access_days }}-day Early Access
+                                            </li>
+                                            {% endif %}
+                                            {% if membership.tier.free_tickets > 0 %}
+                                            <li class="mb-2">
+                                                <span class="benefit-icon"><i class="fas fa-gift text-danger"></i></span>
+                                                {{ membership.tier.free_tickets }} Free Ticket{{ membership.tier.free_tickets|pluralize }}
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Chat Group -->
+                                    {% if membership.tier.chat_group %}
+                                    <div class="mt-3 pt-3 border-top">
+                                        <div class="card chat-group-card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-comments mr-2"></i>Private Community
+                                                </h6>
+                                                <p class="small text-muted">
+                                                    Connect with other {{ membership.tier.name }} members
+                                                </p>
+                                                <a href="{% url 'memberships:chat_group' membership.tier.id %}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    Join Chat Group
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-footer bg-white d-flex justify-content-between">
+                                    <small class="text-muted">
+                                        Host: {{ membership.tier.host.username }}
+                                    </small>
+                                    <div>
+                                        <a href="{% url 'memberships:upgrade_membership' membership.id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-arrow-up"></i> Upgrade
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Registered Events Section -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Registered Events</h6>
+                    <div>
+                        <button id="set-all-reminders" class="btn btn-sm btn-info">
+                            <i class="fas fa-bell mr-1"></i> Set Reminders for All
+                        </button>
+                        <a href="{% url 'events:event_list' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-search"></i> Browse Events
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if registrations %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Date</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                        <th>Type</th>
+                                        <th>Reminder</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for registration in registrations %}
+                                        <tr>
+                                            <td>{{ registration.event.title }}</td>
+                                            <td>{{ registration.event.date|date:"M d, Y H:i" }}</td>
+                                            <td>{{ registration.event.location }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if registration.paid %}bg-success{% else %}bg-warning{% endif %} event-status-badge">
+                                                    {% if registration.status == "approved" %}Paid{% else %}Pending Payment{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>{{ registration.variation }}</td>
+                                            <td>
+                                                {% if registration %}
+                                                    <button class="btn btn-sm btn-outline-primary event-reminder-btn" 
+                                                        data-event-id="{{ registration.event.id }}"
+                                                        data-event-title="{{ registration.event.title }}"
+                                                        data-event-date="{{ registration.event.date|date:'Y-m-d H:i' }}">
+                                                        <i class="fas fa-bell mr-1"></i> Set Reminder
+                                                    </button>
+                                                {% else %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if registration %}
+                                                    <a href="{% url 'events:event_detail' registration.id %}" class="btn btn-sm btn-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted">Event deleted</span>
+                                                {% endif %}
+                                                
+                                                {% if not registration.paid and registration %}
+                                                    <a href="#" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-credit-card"></i> Pay
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">You haven't registered for any events yet</p>
+                            <a href="{% url 'events:event_list' %}" class="btn btn-primary">
+                                Browse Events
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Sections -->
+    <div class="row">
+        <!-- Upcoming Events -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Upcoming Events</h6>
+                    <a href="{% url 'events:event_list' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-search"></i> Browse Events
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Date</th>
+                                        <th>Location</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for event in upcoming_events|slice:":5" %}
+                                        <tr>
+                                            <td>{{ event.title }}</td>
+                                            <td>{{ event.date|date:"M d, Y" }}</td>
+                                            <td>{{ event.location }}</td>
+                                            <td>
+                                                <a href="{% url 'events:event_detail' event.id %}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if event not in attending_events %}
+                                                    <a href="{% url 'events:register_event' event.id %}" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-ticket-alt"></i> Register
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'events:event_list' %}" class="btn btn-sm btn-primary">View All Events</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">No upcoming events in the next 3 months</p>
+                            <a href="{% url 'events:event_list' %}" class="btn btn-primary">
+                                Browse All Events
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
+                    <a href="{% url 'store:order_history' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-history"></i> View History
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders|slice:":5" %}
+                                        <tr>
+                                            <td>{{ order.id }}</td>
+                                            <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                            <td>${{ order.total_price }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if order.status == 'delivered' %}bg-success
+                                                    {% elif order.status == 'cancelled' %}bg-danger
+                                                    {% else %}bg-warning{% endif %}">
+                                                    {{ order.get_status_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'store:order_history' %}" class="btn btn-sm btn-primary">View All Orders</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">You haven't placed any orders yet</p>
+                            <a href="{% url 'store:product_list' %}" class="btn btn-primary">
+                                Browse Products
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Row -->
+    <div class="row">
+        <!-- Shopping Cart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Shopping Cart</h6>
+                </div>
+                <div class="card-body">
+                    {% if cart_items %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in cart_items %}
+                                        <tr>
+                                            <td>{{ item.product.name }}</td>
+                                            <td>${{ item.product.price }}</td>
+                                            <td>{{ item.quantity }}</td>
+                                            <td>${{ item.total_price }}</td>
+                                            <td>
+                                                <a href="{% url 'store:remove_from_cart' item.id %}" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                                        <td colspan="2"><strong>${{ cart_total }}</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'store:product_list' %}" class="btn btn-secondary mr-2">
+                                <i class="fas fa-arrow-left"></i> Continue Shopping
+                            </a>
+                            <a href="{% url 'store:checkout' %}" class="btn btn-primary">
+                                <i class="fas fa-credit-card"></i> Proceed to Checkout
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">Your cart is empty</p>
+                            <a href="{% url 'store:product_list' %}" class="btn btn-primary">
+                                Browse Products
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{% url 'events:event_list' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-plus mr-2"></i>Browse Events
+                        </a>
+                        <a href="{% url 'store:product_list' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shopping-bag mr-2"></i>Shop Products
+                        </a>
+                        <a href="{% url 'store:cart' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shopping-cart mr-2"></i>View Cart
+                        </a>
+                        <a href="{% url 'store:order_history' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-receipt mr-2"></i>Order History
+                        </a>
+                        {% if active_memberships %}
+                            <a href="{% url 'memberships:my_memberships' %}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-crown mr-2"></i>Manage Memberships
+                            </a>
+                        {% else %}
+                            <a href="{% url 'memberships:membership_list' %}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-crown mr-2"></i>Get Membership
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Reminder Modal -->
+<div class="modal fade" id="reminderModal" tabindex="-1" role="dialog" aria-labelledby="reminderModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reminderModalLabel">Set Event Reminder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>You'll receive an email reminder for <strong id="reminder-event-title"></strong> on:</p>
+                <div class="form-group">
+                    <label for="reminder-time">Remind me:</label>
+                    <select class="form-control" id="reminder-time">
+                        <option value="1">1 day before</option>
+                        <option value="3">3 days before</option>
+                        <option value="7">1 week before</option>
+                        <option value="1h">1 hour before</option>
+                        <option value="30m">30 minutes before</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirm-reminder">Set Reminder</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+$(document).ready(function() {
+    let currentEventId = null;
+    let currentEventTitle = null;
+    let currentEventDate = null;
+
+    // Handle individual reminder buttons
+    $('.event-reminder-btn').click(function() {
+        currentEventId = $(this).data('event-id');
+        currentEventTitle = $(this).data('event-title');
+        currentEventDate = $(this).data('event-date');
+        
+        $('#reminder-event-title').text(currentEventTitle);
+        $('#reminderModal').modal('show');
+    });
+
+    // Handle set all reminders button
+    $('#set-all-reminders').click(function() {
+        Swal.fire({
+            title: 'Set Reminders for All Events?',
+            text: 'You will receive email reminders for all your registered events',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, set all reminders',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setAllReminders();
+            }
+        });
+    });
+
+    // Confirm reminder in modal
+    $('#confirm-reminder').click(function() {
+        const reminderTime = $('#reminder-time').val();
+        setReminder(currentEventId, reminderTime);
+        $('#reminderModal').modal('hide');
+    });
+
+    function setReminder(eventId, reminderTime) {
+        $.ajax({
+            url: '{% url "accounts:set_event_reminder" %}',
+            method: 'POST',
+            data: {
+                event_id: eventId,
+                reminder_time: reminderTime,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if(response.success) {
+                    Swal.fire({
+                        title: 'Reminder Set!',
+                        text: response.message,
+                        icon: 'success'
+                    });
+                    // Disable the button for this event
+                    $(`.event-reminder-btn[data-event-id="${eventId}"]`)
+                        .addClass('disabled')
+                        .html('<i class="fas fa-check mr-1"></i> Reminder Set');
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.message,
+                        icon: 'error'
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Could not set reminder. Please try again.',
+                    icon: 'error'
+                });
+            }
+        });
+    }
+
+    function setAllReminders() {
+        $.ajax({
+            url: '{% url "accounts:set_all_event_reminders" %}',
+            method: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if(response.success) {
+                    Swal.fire({
+                        title: 'Reminders Set!',
+                        text: response.message,
+                        icon: 'success'
+                    });
+                    // Disable all reminder buttons
+                    $('.event-reminder-btn')
+                        .addClass('disabled')
+                        .html('<i class="fas fa-check mr-1"></i> Reminder Set');
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.message,
+                        icon: 'error'
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Could not set reminders. Please try again.',
+                    icon: 'error'
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
