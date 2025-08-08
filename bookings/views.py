@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from properties.models import Room
@@ -58,14 +59,13 @@ def booking_detail(request, pk):
     return render(request, 'bookings/booking_detail.html', {'booking': booking})
 
 @method_decorator(login_required, name='dispatch')
-class BookingListView(ListView):
+class BookingListView(LoginRequiredMixin, ListView):
     model = Booking
     template_name = 'bookings/booking_list.html'
     context_object_name = 'bookings'
-    paginate_by = 10
     
     def get_queryset(self):
-        return Booking.objects.filter(user=self.request.user)
+        return Booking.objects.filter(user=self.request.user).order_by('check_in_date')
 
 @login_required
 def cancel_booking(request, pk):

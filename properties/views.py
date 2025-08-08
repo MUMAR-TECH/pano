@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, Sum
 from django.core.paginator import Paginator
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
@@ -10,7 +10,29 @@ from django.utils.decorators import method_decorator
 from bookings.models import Booking
 from .models import Property, Room, Review
 from .forms import PropertyForm, RoomForm, ReviewForm
+from django.urls import reverse_lazy
+# views.py (add this to your existing views)
+from django.views.generic import TemplateView
+from django.db.models import Q
 
+
+class HomeView(TemplateView):
+    template_name = 'home.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get featured properties with their average ratings
+        featured_properties = Property.objects.filter(
+            is_active=True, 
+            is_featured=True
+        ).annotate(
+            avg_rating=Avg('reviews__rating')
+        ).order_by('?')[:6]  # Random 6 featured properties
+        
+        context['featured_properties'] = featured_properties
+        return context
+    
 class PropertyListView(ListView):
     model = Property
     template_name = 'properties/property_list.html'
@@ -66,10 +88,13 @@ class PropertyCreateView(CreateView):
         return super().form_valid(form)
     
     def dispatch(self, request, *args, **kwargs):
-        if request.user.userprofile.user_type != 'vendor':
+        if request.user.role != 'vendor':
             messages.error(request, 'Only vendors can add properties.')
             return redirect('home')
         return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self):
+        return reverse_lazy('properties:vendor_property_detail', kwargs={'pk': self.object.pk})
 
 @method_decorator(login_required, name='dispatch')
 class PropertyUpdateView(UpdateView):
@@ -79,6 +104,9 @@ class PropertyUpdateView(UpdateView):
     
     def get_queryset(self):
         return Property.objects.filter(owner=self.request.user)
+    
+    def get_success_url(self):
+        return reverse_lazy('properties:vendor_property_detail', kwargs={'pk': self.object.pk})
 
 @login_required
 def add_room(request, property_pk):
@@ -91,14 +119,34 @@ def add_room(request, property_pk):
             room.property = property_obj
             room.save()
             messages.success(request, 'Room added successfully!')
-            return redirect('property_detail', pk=property_pk)
+            return redirect('properties:vendor_property_detail', pk=property_pk)
     else:
         form = RoomForm()
     
     return render(request, 'properties/room_form.html', {
-        'form': form, 
+        'form': form,
         'property': property_obj
     })
+
+@method_decorator(login_required, name='dispatch')
+class RoomUpdateView(UpdateView):
+    model = Room
+    form_class = RoomForm
+    template_name = 'properties/room_form.html'
+    
+    def get_queryset(self):
+        # Ensure users can only edit rooms in their properties
+        return Room.objects.filter(property__owner=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add property to context for both update and create
+        context['property'] = self.object.property if self.object else None
+        return context
+    
+    def get_success_url(self):
+        return reverse_lazy('properties:vendor_property_detail', 
+                          kwargs={'pk': self.object.property.pk})
 
 @login_required
 def add_review(request, property_pk):

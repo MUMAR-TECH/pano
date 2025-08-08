@@ -321,7 +321,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'property_list' %}">
+                        <a class="nav-link" href="{% url 'properties:property_list' %}">
                             <i class="fas fa-search me-1"></i> Properties
                         </a>
                     </li>
@@ -349,8 +349,8 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'booking_list' %}">
-                                    <i class="fas fa-calendar-check me-2"></i> My Bookings
+                                <a class="dropdown-item" href="{% url 'bookings:booking_list' %}">
+                                    <i class="fas fa-list me-2"></i> My Bookings
                                 </a>
                             </li>
                             {% if user.userprofile.user_type == 'vendor' %}
@@ -360,7 +360,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'add_property' %}">
+                                <a class="dropdown-item" href="{% url 'properties:add_property' %}">
                                     <i class="fas fa-plus-circle me-2"></i> Add Property
                                 </a>
                             </li>
@@ -432,7 +432,7 @@
                     <h5><i class="fas fa-link me-2"></i> Quick Links</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2">
-                            <a href="{% url 'property_list' %}">
+                            <a href="{% url 'properties:property_list' %}">
                                 <i class="fas fa-search me-2"></i> Browse Properties
                             </a>
                         </li>

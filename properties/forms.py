@@ -18,12 +18,22 @@ class RoomForm(forms.ModelForm):
     class Meta:
         model = Room
         fields = [
-            'room_type', 'name', 'description', 'price_per_night', 
+            'name', 'room_type', 'description', 'price_per_night', 
             'capacity', 'total_rooms', 'air_conditioning', 'balcony', 
             'tv', 'mini_bar', 'room_service'
         ]
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter room name'}),
+            'price_per_night': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+            'capacity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'total_rooms': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'room_type': forms.Select(attrs={'class': 'form-control'}),
+        }
+        help_text = {
+            'capacity': 'Maximum number of guests allowed',
+            'total_rooms': 'Number of rooms of this type available',
+            'price_per_night': 'Price per night in USD',
         }
 
 class ReviewForm(forms.ModelForm):

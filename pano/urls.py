@@ -24,9 +24,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #path('accounts/', include('allauth.urls')),
     #path('', TemplateView.as_view(template_name='home.html'), name='home'),
-    path('properties/', include('properties.urls')),
+    path('', include('properties.urls')),
     path('bookings/', include('bookings.urls')),
-    path('', include('accounts.urls')),
+    path('accounts', include('accounts.urls')),
 ]
 
 if settings.DEBUG:

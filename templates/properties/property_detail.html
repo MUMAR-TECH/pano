@@ -3,75 +3,215 @@
 {% block title %}{{ property.name }} - Hotel Booking{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <!-- Property Images -->
-        {% if property.images.all %}
-        <div id="propertyCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                {% for image in property.images.all %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                    <img src="{{ image.image.url }}" class="d-block w-100" 
-                         style="height: 400px; object-fit: cover;" alt="{{ image.caption }}">
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Property Images -->
+            {% if property.images.all %}
+            <div id="propertyCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in property.images.all %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" class="d-block w-100" 
+                             style="height: 400px; object-fit: cover;" alt="{{ image.caption }}">
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+                {% if property.images.count > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+                {% endif %}
             </div>
-            {% if property.images.count > 1 %}
-            <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-            </button>
+            {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center mb-4" style="height: 400px;">
+                <i class="fas fa-image fa-5x text-muted"></i>
+            </div>
             {% endif %}
-        </div>
-        {% else %}
-        <div class="bg-light d-flex align-items-center justify-content-center mb-4" style="height: 400px;">
-            <i class="fas fa-image fa-5x text-muted"></i>
-        </div>
-        {% endif %}
-        
-        <!-- Property Details -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h2>{{ property.name }}</h2>
-                        <p class="text-muted mb-2">
-                            <i class="fas fa-map-marker-alt"></i> {{ property.address }}, {{ property.city }}, {{ property.country }}
-                        </p>
-                        <span class="badge bg-primary fs-6">{{ property.get_property_type_display }}</span>
-                    </div>
-                    {% if avg_rating %}
-                    <div class="text-end">
-                        <div class="text-warning mb-1">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= avg_rating %}
-                                <i class="fas fa-star"></i>
-                                {% else %}
-                                <i class="far fa-star"></i>
-                                {% endif %}
-                            {% endfor %}
+            
+            <!-- Property Details -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2>{{ property.name }}</h2>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-map-marker-alt"></i> {{ property.address }}, {{ property.city }}, {{ property.country }}
+                            </p>
+                            <span class="badge bg-primary fs-6">{{ property.get_property_type_display }}</span>
                         </div>
-                        <small class="text-muted">{{ reviews.count }} review{{ reviews.count|pluralize }}</small>
+                        {% if avg_rating %}
+                        <div class="text-end">
+                            <div class="text-warning mb-1">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= avg_rating %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <small class="text-muted">{{ reviews.count }} review{{ reviews.count|pluralize }}</small>
+                        </div>
+                        {% endif %}
                     </div>
+                    
+                    <p class="lead">{{ property.description }}</p>
+                    
+                    <!-- Amenities -->
+                    <h5><i class="fas fa-star"></i> Amenities</h5>
+                    <div class="row mb-3">
+                        {% if property.wifi %}<div class="col-md-4"><i class="fas fa-wifi text-success"></i> Free WiFi</div>{% endif %}
+                        {% if property.parking %}<div class="col-md-4"><i class="fas fa-parking text-success"></i> Parking</div>{% endif %}
+                        {% if property.restaurant %}<div class="col-md-4"><i class="fas fa-utensils text-success"></i> Restaurant</div>{% endif %}
+                        {% if property.gym %}<div class="col-md-4"><i class="fas fa-dumbbell text-success"></i> Gym</div>{% endif %}
+                        {% if property.pool %}<div class="col-md-4"><i class="fas fa-swimming-pool text-success"></i> Pool</div>{% endif %}
+                        {% if property.spa %}<div class="col-md-4"><i class="fas fa-spa text-success"></i> Spa</div>{% endif %}
+                        {% if property.pets_allowed %}<div class="col-md-4"><i class="fas fa-paw text-success"></i> Pet Friendly</div>{% endif %}
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="border-top pt-3">
+                        <h6><i class="fas fa-phone"></i> Contact Information</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p><i class="fas fa-phone text-primary"></i> {{ property.phone }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><i class="fas fa-envelope text-primary"></i> {{ property.email }}</p>
+                            </div>
+                            {% if property.website %}
+                            <div class="col-md-4">
+                                <p><i class="fas fa-globe text-primary"></i> <a href="{{ property.website }}" target="_blank">Visit Website</a></p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Rooms -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Available Rooms</h5>
+                </div>
+                <div class="card-body">
+                    {% if rooms %}
+                    <div class="row">
+                        {% for room in rooms %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ room.name }}</h5>
+                                    <span class="badge bg-info mb-2">{{ room.get_room_type_display }}</span>
+                                    <p class="card-text">{{ room.description }}</p>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-user"></i> Capacity: {{ room.capacity }} guests</li>
+                                        <li><i class="fas fa-dollar-sign"></i> Price: ${{ room.price_per_night }}/night</li>
+                                    </ul>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% if room.air_conditioning %}<span class="badge bg-secondary"><i class="fas fa-snowflake"></i> AC</span>{% endif %}
+                                        {% if room.balcony %}<span class="badge bg-secondary"><i class="fas fa-door-open"></i> Balcony</span>{% endif %}
+                                        {% if room.tv %}<span class="badge bg-secondary"><i class="fas fa-tv"></i> TV</span>{% endif %}
+                                        {% if room.mini_bar %}<span class="badge bg-secondary"><i class="fas fa-glass-martini"></i> Mini Bar</span>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="{% url 'bookings:create_booking' room.pk %}" class="btn btn-primary">Book Now</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-center text-muted">No rooms available at the moment.</p>
                     {% endif %}
                 </div>
-                
-                <p>{{ property.description }}</p>
-                
-                <!-- Amenities -->
-                <h5><i class="fas fa-star"></i> Amenities</h5>
-                <div class="row mb-3">
-                    {% if property.wifi %}<div class="col-md-4"><i class="fas fa-wifi text-success"></i> Free WiFi</div>{% endif %}
-                    {% if property.parking %}<div class="col-md-4"><i class="fas fa-parking text-success"></i> Parking</div>{% endif %}
-                    {% if property.restaurant %}<div class="col-md-4"><i class="fas fa-utensils text-success"></i> Restaurant</div>{% endif %}
-                    {% if property.gym %}<div class="col-md-4"><i class="fas fa-dumbbell text-success"></i> Gym</div>{% endif %}
-                    {% if property.pool %}<div class="col-md-4"><i class="fas fa-swimming-pool text-success"></i> Pool</div>{% endif %}
-                    {% if property.spa %}<div class="col-md-4"><i class="fas fa-spa text-success"></i> Spa</div>{% endif %}
-                    {% if property.pets_allowed %}<div class="col-md-4"><i class="fas fa-paw text-success"></i> Pet Friendly</div>{% endif %}
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Guest Reviews</h5>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'properties:add_review' property.pk %}" class="btn btn-primary btn-sm">Write a Review</a>
+                    {% endif %}
                 </div>
-                
-                <!-- Contact Information -->
-                <div class="border-top pt-3">
-                    <h6><i class="fas fa-phone"></i> Contact Information</h6>
+                <div class="card-body">
+                    {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="mb-4 {% if not forloop.last %}border-bottom pb-4{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1">{{ review.title }}</h6>
+                                <small class="text-muted">By {{ review.user.get_full_name|default:review.user.username }}</small>
+                            </div>
+                            <div class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="mb-1">{{ review.comment }}</p>
+                        <small class="text-muted">Posted on {{ review.created_at|date:"F d, Y" }}</small>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-center text-muted">No reviews yet. Be the first to review this property!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Quick Facts</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-map-marker-alt text-primary"></i>
+                            <strong>Location:</strong><br>
+                            {{ property.city }}, {{ property.state }}, {{ property.country }}
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-building text-primary"></i>
+                            <strong>Property Type:</strong><br>
+                            {{ property.get_property_type_display }}
+                        </li>
+                        {% if avg_rating %}
+                        <li class="mb-3">
+                            <i class="fas fa-star text-primary"></i>
+                            <strong>Rating:</strong><br>
+                            {{ avg_rating|floatformat:1 }} out of 5
+                        </li>
+                        {% endif %}
+                    </ul>
+                    <div class="d-grid">
+                        <a href="#available-rooms" class="btn btn-primary">View Available Rooms</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Smooth scroll to rooms section
+    document.querySelector('a[href="#available-rooms"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelector('#available-rooms').scrollIntoView({ 
+            behavior: 'smooth' 
+        });
+    });
+</script>
+{% endblock %}
