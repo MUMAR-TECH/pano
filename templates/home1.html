@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - Hotel Booking{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-primary text-white p-5 rounded mb-4">
+    <div class="container">
+        <h1 class="display-4">Find Your Perfect Stay</h1>
+        <p class="lead">Discover amazing hotels, lodges, motels, and guest houses for your next adventure.</p>
+        <a class="btn btn-light btn-lg" href="{% url 'properties:property_list' %}" role="button">
+            <i class="fas fa-search"></i> Browse Properties
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-hotel fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Hotels</h5>
+                <p class="card-text">Luxury and comfort in the heart of the city.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-mountain fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Lodges</h5>
+                <p class="card-text">Scenic retreats in natural settings.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-car fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Motels</h5>
+                <p class="card-text">Convenient roadside accommodation.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-home fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Guest Houses</h5>
+                <p class="card-text">Cozy and intimate stays.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-6">
+        <h3>For Travelers</h3>
+        <p class="lead">Explore thousands of verified properties worldwide. Book with confidence and enjoy your perfect stay.</p>
+        <ul class="list-unstyled">
+            <li><i class="fas fa-check text-success"></i> Verified properties</li>
+            <li><i class="fas fa-check text-success"></i> Secure booking</li>
+            <li><i class="fas fa-check text-success"></i> 24/7 support</li>
+            <li><i class="fas fa-check text-success"></i> Best price guarantee</li>
+        </ul>
+    </div>
+    <div class="col-md-6">
+        <h3>For Property Owners</h3>
+        <p class="lead">List your property and reach millions of travelers. Start earning with our platform today.</p>
+        <ul class="list-unstyled">
+            <li><i class="fas fa-check text-success"></i> Easy listing process</li>
+            <li><i class="fas fa-check text-success"></i> Marketing tools</li>
+            <li><i class="fas fa-check text-success"></i> Booking management</li>
+            <li><i class="fas fa-check text-success"></i> Secure payments</li>
+        </ul>
+        {% if not user.is_authenticated %}
+        <a href="{% url 'accounts:register_host' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> List Your Property
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

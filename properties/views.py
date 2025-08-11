@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Avg, Sum
+from django.db.models import Q, Avg, Sum, Count
 from django.core.paginator import Paginator
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
@@ -22,13 +22,14 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Get featured properties with their average ratings
+        # Get featured properties with their average ratings and review count
         featured_properties = Property.objects.filter(
             is_active=True, 
             is_featured=True
         ).annotate(
-            avg_rating=Avg('reviews__rating')
-        ).order_by('?')[:6]  # Random 6 featured properties
+            avg_rating=Avg('reviews__rating'),
+            review_count=Count('reviews')
+        ).prefetch_related('images').order_by('-avg_rating')[:6]
         
         context['featured_properties'] = featured_properties
         return context

@@ -1,82 +1,136 @@
 {% extends 'base.html' %}
 
-{% block title %}Welcome - Hotel Booking{% endblock %}
-
 {% block content %}
-<div class="jumbotron bg-primary text-white p-5 rounded mb-4">
-    <div class="container">
-        <h1 class="display-4">Find Your Perfect Stay</h1>
-        <p class="lead">Discover amazing hotels, lodges, motels, and guest houses for your next adventure.</p>
-        <a class="btn btn-light btn-lg" href="{% url 'properties:property_list' %}" role="button">
-            <i class="fas fa-search"></i> Browse Properties
-        </a>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Find Your Perfect<br><span class="highlight">Hostel & Lodge</span></h1>
+        <p>Discover amazing hostels and lodges around the world. Book unique stays and connect with fellow travelers.</p>
     </div>
-</div>
+</section>
 
-<div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="fas fa-hotel fa-3x text-primary mb-3"></i>
-                <h5 class="card-title">Hotels</h5>
-                <p class="card-text">Luxury and comfort in the heart of the city.</p>
-            </div>
+<!-- Search Form -->
+<form action="{% url 'properties:search' %}" method="GET" class="search-form">
+    <div class="form-row">
+        <div class="form-group">
+            <label for="destination">Where</label>
+            <input type="text" id="destination" name="destination" placeholder="City or destination">
+        </div>
+        <div class="form-group">
+            <label for="checkin">Check-in</label>
+            <input type="date" id="checkin" name="checkin">
+        </div>
+        <div class="form-group">
+            <label for="checkout">Check-out</label>
+            <input type="date" id="checkout" name="checkout">
+        </div>
+        <div class="form-group">
+            <label for="guests">Guests</label>
+            <select id="guests" name="guests">
+                <option value="1">1 guest</option>
+                <option value="2">2 guests</option>
+                <option value="3">3 guests</option>
+                <option value="4">4+ guests</option>
+            </select>
         </div>
     </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="fas fa-mountain fa-3x text-success mb-3"></i>
-                <h5 class="card-title">Lodges</h5>
-                <p class="card-text">Scenic retreats in natural settings.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="fas fa-car fa-3x text-warning mb-3"></i>
-                <h5 class="card-title">Motels</h5>
-                <p class="card-text">Convenient roadside accommodation.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="fas fa-home fa-3x text-info mb-3"></i>
-                <h5 class="card-title">Guest Houses</h5>
-                <p class="card-text">Cozy and intimate stays.</p>
-            </div>
-        </div>
-    </div>
-</div>
+    <button type="submit" class="search-btn">
+        🔍 Search Stays
+    </button>
+</form>
 
-<div class="row mt-5">
-    <div class="col-md-6">
-        <h3>For Travelers</h3>
-        <p class="lead">Explore thousands of verified properties worldwide. Book with confidence and enjoy your perfect stay.</p>
-        <ul class="list-unstyled">
-            <li><i class="fas fa-check text-success"></i> Verified properties</li>
-            <li><i class="fas fa-check text-success"></i> Secure booking</li>
-            <li><i class="fas fa-check text-success"></i> 24/7 support</li>
-            <li><i class="fas fa-check text-success"></i> Best price guarantee</li>
-        </ul>
+<!-- Filters -->
+<section class="filters">
+    <div class="filters-container">
+        <div class="filter-buttons">
+            <button class="filter-btn" onclick="toggleFilter(this)">🔽 All Filters</button>
+            <button class="filter-btn active" onclick="setFilter('hostels')">Hostels</button>
+            <button class="filter-btn" onclick="setFilter('lodges')">Lodges</button>
+            <button class="filter-btn" onclick="setFilter('under50')">Under $50</button>
+            <button class="filter-btn" onclick="setFilter('rating')">⭐ 4.5+</button>
+        </div>
+        <div class="sort-container">
+            <div class="sort-icon"></div>
+            <span class="sort-text">Sort by</span>
+            <select class="sort-select" onchange="sortStays(this.value)">
+                <option value="price">Price</option>
+                <option value="rating">Rating</option>
+                <option value="reviews">Reviews</option>
+            </select>
+        </div>
     </div>
-    <div class="col-md-6">
-        <h3>For Property Owners</h3>
-        <p class="lead">List your property and reach millions of travelers. Start earning with our platform today.</p>
-        <ul class="list-unstyled">
-            <li><i class="fas fa-check text-success"></i> Easy listing process</li>
-            <li><i class="fas fa-check text-success"></i> Marketing tools</li>
-            <li><i class="fas fa-check text-success"></i> Booking management</li>
-            <li><i class="fas fa-check text-success"></i> Secure payments</li>
-        </ul>
-        {% if not user.is_authenticated %}
-        <a href="{% url 'accounts:register_host' %}" class="btn btn-success">
-            <i class="fas fa-plus"></i> List Your Property
-        </a>
-        {% endif %}
+</section>
+
+<!-- Featured Stays -->
+<section class="featured" id="featured">
+    <div class="featured-container">
+        <h2>Featured Stays</h2>
+        <p class="featured-subtitle">Discover hand-picked hostels and lodges loved by travelers worldwide</p>
+        
+        <div class="stays-grid">
+            {% for property in featured_properties %}
+            <div class="stay-card" onclick="location.href='{% url 'properties:detail' property.pk %}'">
+                <div class="card-image" style="background-image: url('{{ property.images.first.image.url|default:'https://images.unsplash.com/photo-1566073771259-6a8506099945' }}');">
+                    <div class="card-badge badge-{{ property.property_type }}">{{ property.get_property_type_display }}</div>
+                    <div class="card-rating">
+                        ⭐ {{ property.avg_rating|default:"New"|floatformat:1 }}
+                    </div>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">{{ property.name }}</h3>
+                    <div class="card-location">
+                        <div class="location-icon"></div>
+                        {{ property.city }}, {{ property.state }}
+                    </div>
+                    <div class="card-reviews">{{ property.reviews.count }} reviews</div>
+                    <div class="card-bottom">
+                        <div class="card-amenities">
+                            {% if property.wifi %}
+                            <div class="amenity">
+                                <div class="amenity-icon wifi-icon"></div>
+                                WiFi
+                            </div>
+                            {% endif %}
+                            {% if property.parking %}
+                            <div class="amenity">
+                                <div class="amenity-icon wifi-icon"></div>
+                                Parking
+                            </div>
+                            {% endif %}
+                            {% if property.restaurant %}
+                            <div class="amenity">
+                                <div class="amenity-icon breakfast-icon"></div>
+                                Restaurant
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-price-section">
+                            <span class="price">${{ property.min_price }}</span>
+                            <span class="price-unit">/night</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
-</div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        document.getElementById('checkin').value = formatDate(today);
+        document.getElementById('checkout').value = formatDate(tomorrow);
+    });
+</script>
 {% endblock %}
