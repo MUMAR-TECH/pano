@@ -3,8 +3,11 @@ from . import views
 
 app_name = 'properties'
 
+
+
 urlpatterns = [
-    path('', views.PropertyListView.as_view(), name='property_list'),
+    path('', views.HomeView.as_view(), name='property_list'),
+    path('propperties', views.PropertyListView.as_view(), name='property_list'),
     path('<int:pk>/', views.PropertyDetailView.as_view(), name='property_detail'),
 
     path('add/', views.PropertyCreateView.as_view(), name='add_property'),

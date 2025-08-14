@@ -1,136 +1,1076 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StayHub - Find Your Perfect Hostel & Lodge</title>
+    <!-- Assuming you've moved the CSS to a static file, you would link it like this -->
+    <!-- <link rel="stylesheet" href="{% static 'css/style.css' %}"> -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block content %}
-<!-- Hero Section -->
-<section class="hero">
-    <div class="hero-content">
-        <h1>Find Your Perfect<br><span class="highlight">Hostel & Lodge</span></h1>
-        <p>Discover amazing hostels and lodges around the world. Book unique stays and connect with fellow travelers.</p>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Header Styles - Exact match */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .logo-icon {
+            width: 20px;
+            height: 20px;
+            background: #10B981;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #6B7280;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #374151;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .btn-host {
+            background: none;
+            border: none;
+            color: #6B7280;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .btn-signin {
+            background: none;
+            border: none;
+            color: #6B7280;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .btn-signup {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        .btn-signup:hover {
+            background: #2563EB;
+        }
+
+        /* Hero Section - Exact styling */
+        .hero {
+            height: 65vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+                        url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            margin-top: 80px;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 700px;
+            padding: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .hero h1 .highlight {
+            color: #60A5FA;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            color: #F3F4F6;
+        }
+
+        /* Search Form - Exact match */
+        .search-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            max-width: 900px;
+            margin: -80px auto 0;
+            position: relative;
+            z-index: 100;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: #6B7280;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.8rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Filters Section - Exact match */
+        .filters {
+            padding: 1.5rem 2rem;
+            background: #FAFAFA;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .filters-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 1px solid #D1D5DB;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            color: #374151;
+        }
+
+        .filter-btn.active {
+            background: #374151;
+            color: white;
+            border-color: #374151;
+        }
+
+        .filter-btn:hover:not(.active) {
+            border-color: #9CA3AF;
+        }
+
+        .sort-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sort-icon {
+            width: 16px;
+            height: 16px;
+            background: #6B7280;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12'/%3E%3C/svg%3E") no-repeat center;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12'/%3E%3C/svg%3E") no-repeat center;
+        }
+
+        .sort-text {
+            font-size: 0.9rem;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .sort-select {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.9rem;
+            color: #374151;
+        }
+
+        /* Featured Stays - Exact match */
+        .featured {
+            padding: 4rem 2rem;
+            background: white;
+        }
+
+        .featured-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .featured h2 {
+            text-align: center;
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #111827;
+        }
+
+        .featured-subtitle {
+            text-align: center;
+            color: #6B7280;
+            font-size: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .stays-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .stay-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #F3F4F6;
+        }
+
+        .stay-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image {
+            height: 220px;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge-hostel {
+            background: #3B82F6;
+        }
+
+        .badge-lodge {
+            background: #F59E0B;
+        }
+
+        .card-rating {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #111827;
+        }
+
+        .card-location {
+            color: #6B7280;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .location-icon {
+            width: 14px;
+            height: 14px;
+            background: #9CA3AF;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 11a3 3 0 11-6 0 3 3 0 016 0z'/%3E%3C/svg%3E") no-repeat center;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 11a3 3 0 11-6 0 3 3 0 016 0z'/%3E%3C/svg%3E") no-repeat center;
+        }
+
+        .card-reviews {
+            color: #9CA3AF;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .card-amenities {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .amenity {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #6B7280;
+            font-size: 0.8rem;
+        }
+
+        .amenity-icon {
+            width: 12px;
+            height: 12px;
+            background: #9CA3AF;
+        }
+
+        .wifi-icon {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0'/%3E%3C/svg%3E") no-repeat center;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0'/%3E%3C/svg%3E") no-repeat center;
+        }
+
+        .breakfast-icon {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'/%3E%3C/svg%3E") no-repeat center;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'/%3E%3C/svg%3E") no-repeat center;
+        }
+
+        .card-price-section {
+            text-align: right;
+        }
+
+        .price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .price-unit {
+            color: #6B7280;
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+
+        /* Footer - Exact match */
+        .footer {
+            background: #111827;
+            color: white;
+            padding: 3rem 2rem 2rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-brand h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+        }
+
+        .footer-brand .logo-icon {
+            background: #10B981;
+        }
+
+        .footer-brand p {
+            color: #9CA3AF;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.6rem;
+        }
+
+        .footer-section ul li a {
+            color: #9CA3AF;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .footer-section ul li a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #9CA3AF;
+            font-size: 0.9rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: flex-start;
+        }
+
+        .social-links a {
+            color: #9CA3AF;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .filters-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .filter-buttons {
+                flex-wrap: wrap;
+            }
+
+            .stays-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                StayHub
+            </div>
+            <nav class="nav-links">
+                <a href="#" onclick="scrollToSection('featured')">Find Stays</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+                <a href="#">Help</a>
+            </nav>
+            <div class="nav-actions">
+                <button class="btn-host">Become a Host</button>
+                <button class="btn-signin">Sign in</button>
+                <button class="btn-signup">Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Find Your Perfect<br><span class="highlight">Hostel & Lodge</span></h1>
+            <p>Discover amazing hostels and lodges around the world. Book unique stays and connect with fellow travelers.</p>
+        </div>
+    </section>
+
+    <!-- Search Form -->
+    <div class="search-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="destination">Where</label>
+                <input type="text" id="destination" placeholder="City or destination">
+            </div>
+            <div class="form-group">
+                <label for="checkin">Check-in</label>
+                <input type="date" id="checkin">
+            </div>
+            <div class="form-group">
+                <label for="checkout">Check-out</label>
+                <input type="date" id="checkout">
+            </div>
+            <div class="form-group">
+                <label for="guests">Guests</label>
+                <select id="guests">
+                    <option>1 guest</option>
+                    <option>2 guests</option>
+                    <option>3 guests</option>
+                    <option>4+ guests</option>
+                </select>
+            </div>
+        </div>
+        <button class="search-btn" onclick="searchStays()">
+            🔍 Search Stays
+        </button>
     </div>
-</section>
 
-<!-- Search Form -->
-<form action="{% url 'properties:search' %}" method="GET" class="search-form">
-    <div class="form-row">
-        <div class="form-group">
-            <label for="destination">Where</label>
-            <input type="text" id="destination" name="destination" placeholder="City or destination">
+    <!-- Filters -->
+    <section class="filters">
+        <div class="filters-container">
+            <div class="filter-buttons">
+                <button class="filter-btn" onclick="toggleFilter(this)">🔽 All Filters</button>
+                <button class="filter-btn active" onclick="setFilter('hostel')">Hostels</button>
+                <button class="filter-btn" onclick="setFilter('lodge')">Lodges</button>
+                <button class="filter-btn" onclick="setFilter('under50')">Under $50</button>
+                <button class="filter-btn" onclick="setFilter('rating')">⭐ 4.5+</button>
+            </div>
+            <div class="sort-container">
+                <div class="sort-icon"></div>
+                <span class="sort-text">Sort by</span>
+                <select class="sort-select" onchange="sortStays(this.value)">
+                    <option value="price">Price</option>
+                    <option value="rating">Rating</option>
+                    <option value="reviews">Reviews</option>
+                </select>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="checkin">Check-in</label>
-            <input type="date" id="checkin" name="checkin">
-        </div>
-        <div class="form-group">
-            <label for="checkout">Check-out</label>
-            <input type="date" id="checkout" name="checkout">
-        </div>
-        <div class="form-group">
-            <label for="guests">Guests</label>
-            <select id="guests" name="guests">
-                <option value="1">1 guest</option>
-                <option value="2">2 guests</option>
-                <option value="3">3 guests</option>
-                <option value="4">4+ guests</option>
-            </select>
-        </div>
-    </div>
-    <button type="submit" class="search-btn">
-        🔍 Search Stays
-    </button>
-</form>
+    </section>
 
-<!-- Filters -->
-<section class="filters">
-    <div class="filters-container">
-        <div class="filter-buttons">
-            <button class="filter-btn" onclick="toggleFilter(this)">🔽 All Filters</button>
-            <button class="filter-btn active" onclick="setFilter('hostels')">Hostels</button>
-            <button class="filter-btn" onclick="setFilter('lodges')">Lodges</button>
-            <button class="filter-btn" onclick="setFilter('under50')">Under $50</button>
-            <button class="filter-btn" onclick="setFilter('rating')">⭐ 4.5+</button>
-        </div>
-        <div class="sort-container">
-            <div class="sort-icon"></div>
-            <span class="sort-text">Sort by</span>
-            <select class="sort-select" onchange="sortStays(this.value)">
-                <option value="price">Price</option>
-                <option value="rating">Rating</option>
-                <option value="reviews">Reviews</option>
-            </select>
-        </div>
-    </div>
-</section>
+    <!-- Featured Stays -->
+    <section class="featured" id="featured">
+        <div class="featured-container">
+            <h2>Featured Stays</h2>
+            <p class="featured-subtitle">Discover hand-picked hostels and lodges loved by travelers worldwide</p>
 
-<!-- Featured Stays -->
-<section class="featured" id="featured">
-    <div class="featured-container">
-        <h2>Featured Stays</h2>
-        <p class="featured-subtitle">Discover hand-picked hostels and lodges loved by travelers worldwide</p>
-        
-        <div class="stays-grid">
-            {% for property in featured_properties %}
-            <div class="stay-card" onclick="location.href='{% url 'properties:detail' property.pk %}'">
-                <div class="card-image" style="background-image: url('{{ property.images.first.image.url|default:'https://images.unsplash.com/photo-1566073771259-6a8506099945' }}');">
-                    <div class="card-badge badge-{{ property.property_type }}">{{ property.get_property_type_display }}</div>
-                    <div class="card-rating">
-                        ⭐ {{ property.avg_rating|default:"New"|floatformat:1 }}
+            <div class="stays-grid" id="staysGrid">
+                <!-- Django template loop for dynamic stay cards -->
+                {% for stay in featured_stays %}
+                <div class="stay-card" data-stay-id="{{ stay.id }}" data-type="{{ stay.type }}" data-price="{{ stay.price }}" data-rating="{{ stay.rating }}" data-reviews="{{ stay.reviews }}">
+                    <div class="card-image" style="background-image: url('{{ stay.image_url }}');">
+                        <div class="card-badge {% if stay.type == 'hostel' %}badge-hostel{% else %}badge-lodge{% endif %}">{{ stay.type|capfirst }}</div>
+                        <div class="card-rating">⭐ {{ stay.rating }}</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">{{ stay.title }}</h3>
+                        <div class="card-location">
+                            <div class="location-icon"></div>
+                            {{ stay.location }}
+                        </div>
+                        <div class="card-reviews">{{ stay.reviews }} reviews</div>
+                        <div class="card-bottom">
+                            <div class="card-amenities">
+                                <!-- Example of a nested loop for amenities -->
+                                {% for amenity in stay.amenities %}
+                                <div class="amenity">
+                                    <!-- This will need to be customized based on your data structure -->
+                                    <div class="amenity-icon wifi-icon"></div>
+                                    {{ amenity }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="card-price-section">
+                                <span class="price">${{ stay.price }}</span>
+                                <span class="price-unit">/night</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card-content">
-                    <h3 class="card-title">{{ property.name }}</h3>
-                    <div class="card-location">
-                        <div class="location-icon"></div>
-                        {{ property.city }}, {{ property.state }}
+                {% empty %}
+                <p>No featured stays found. Check back later!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <h3>
+                        <div class="logo-icon"></div>
+                        StayHub
+                    </h3>
+                    <p>Connecting travelers with unique hostels and lodges worldwide. Your adventure starts here.</p>
+                    <div class="social-links">
+                        <a href="#">f</a>
+                        <a href="#">📷</a>
+                        <a href="#">🐦</a>
                     </div>
-                    <div class="card-reviews">{{ property.reviews.count }} reviews</div>
-                    <div class="card-bottom">
-                        <div class="card-amenities">
-                            {% if property.wifi %}
-                            <div class="amenity">
-                                <div class="amenity-icon wifi-icon"></div>
-                                WiFi
-                            </div>
-                            {% endif %}
-                            {% if property.parking %}
-                            <div class="amenity">
-                                <div class="amenity-icon wifi-icon"></div>
-                                Parking
-                            </div>
-                            {% endif %}
-                            {% if property.restaurant %}
-                            <div class="amenity">
-                                <div class="amenity-icon breakfast-icon"></div>
-                                Restaurant
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="card-price-section">
-                            <span class="price">${{ property.min_price }}</span>
-                            <span class="price-unit">/night</span>
-                        </div>
-                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Press</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Safety</a></li>
+                        <li><a href="#">Cancellation</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:support@stayhub.com">support@stayhub.com</a></li>
+                        <li><a href="tel:+15551234567">+1 (555) 123-4567</a></li>
+                    </ul>
                 </div>
             </div>
-            {% endfor %}
+            <div class="footer-bottom">
+                <p>© 2024 StayHub. All rights reserved. | Privacy Policy | Terms of Service</p>
+            </div>
         </div>
-    </div>
-</section>
+    </footer>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        const formatDate = (date) => {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        };
+    <script>
+        // Updated JavaScript to work with Django rendered static HTML elements
+        // This variable now needs to be re-queried after the page loads
+        let stayCards = document.querySelectorAll('.stay-card');
 
-        document.getElementById('checkin').value = formatDate(today);
-        document.getElementById('checkout').value = formatDate(tomorrow);
-    });
-</script>
-{% endblock %}
+        let currentFilter = 'hostel';
+        let currentSort = 'price';
+
+        // Event handlers
+        function toggleFilter(button) {
+            // Using a modal instead of alert for better UX
+            showModal('Advanced filters coming soon!', 'info');
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(filter) || (filter === 'rating' && btn.textContent.includes('4.5')) || (filter === 'under50' && btn.textContent.includes('Under $50'))) {
+                    btn.classList.add('active');
+                }
+            });
+
+            filterStays();
+        }
+
+        function filterStays() {
+            // Re-query the cards since the Django template renders them on page load
+            const currentStayCards = document.querySelectorAll('.stay-card');
+            currentStayCards.forEach(card => {
+                const type = card.dataset.type;
+                const price = parseFloat(card.dataset.price);
+                const rating = parseFloat(card.dataset.rating);
+                let isVisible = true;
+
+                if (currentFilter === 'hostel' && type !== 'hostel') {
+                    isVisible = false;
+                }
+                if (currentFilter === 'lodge' && type !== 'lodge') {
+                    isVisible = false;
+                }
+                if (currentFilter === 'under50' && price >= 50) {
+                    isVisible = false;
+                }
+                if (currentFilter === 'rating' && rating < 4.5) {
+                    isVisible = false;
+                }
+
+                card.style.display = isVisible ? 'block' : 'none';
+            });
+
+            sortStays(currentSort); // Re-sort after filtering
+        }
+
+        function sortStays(sortType) {
+            currentSort = sortType;
+            const grid = document.getElementById('staysGrid');
+            // Re-query the cards that are currently visible
+            const sortedCards = Array.from(document.querySelectorAll('.stay-card:not([style*="display: none"])'));
+
+            sortedCards.sort((a, b) => {
+                const aValue = a.dataset[sortType];
+                const bValue = b.dataset[sortType];
+
+                if (sortType === 'price' || sortType === 'rating' || sortType === 'reviews') {
+                    return parseFloat(aValue) - parseFloat(bValue);
+                }
+                return 0; // No change for other sort types
+            });
+
+            // Append sorted cards back to the grid
+            sortedCards.forEach(card => grid.appendChild(card));
+        }
+
+        function searchStays() {
+            const destination = document.getElementById('destination').value;
+            const checkin = document.getElementById('checkin').value;
+            const checkout = document.getElementById('checkout').value;
+            const guests = document.getElementById('guests').value;
+
+            if (!destination) {
+                showModal('Please enter a destination', 'error');
+                return;
+            }
+
+            if (!checkin || !checkout) {
+                showModal('Please select check-in and check-out dates', 'error');
+                return;
+            }
+
+            // Simulate search with animation
+            const searchBtn = document.querySelector('.search-btn');
+            const originalText = searchBtn.innerHTML;
+            searchBtn.innerHTML = '⏳ Searching...';
+            searchBtn.disabled = true;
+
+            setTimeout(() => {
+                searchBtn.innerHTML = originalText;
+                searchBtn.disabled = false;
+                scrollToSection('featured');
+                // You would typically redirect to a search results page here in a real Django app
+                showModal(`Found ${document.querySelectorAll('.stay-card:not([style*="display: none"])').length} stays in ${destination} from ${checkin} to ${checkout} for ${guests}`, 'success');
+            }, 1500);
+        }
+
+        function viewStay(stayId) {
+            const stayCard = document.querySelector(`[data-stay-id="${stayId}"]`);
+            const name = stayCard.querySelector('.card-title').textContent;
+            const price = stayCard.querySelector('.price').textContent;
+            const rating = stayCard.querySelector('.card-rating').textContent.trim();
+            const reviews = stayCard.querySelector('.card-reviews').textContent;
+            const location = stayCard.querySelector('.card-location').textContent.trim();
+            const amenities = Array.from(stayCard.querySelectorAll('.amenity')).map(el => el.textContent.trim()).join(', ');
+
+            showModal(`📍 ${name}\n💰 ${price}/night\n${rating} (${reviews})\n📍 ${location}\n\n✨ Amenities: ${amenities}`, 'info');
+        }
+
+        // Custom Modal implementation instead of alert()
+        function showModal(message, type = 'info') {
+            const existingModal = document.getElementById('custom-modal');
+            if (existingModal) { existingModal.remove(); }
+
+            const modal = document.createElement('div');
+            modal.id = 'custom-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 2rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                z-index: 2000;
+                max-width: 400px;
+                text-align: center;
+                animation: fadeIn 0.3s ease-out;
+            `;
+
+            const messageP = document.createElement('p');
+            messageP.textContent = message;
+            messageP.style.cssText = 'margin-bottom: 1rem;';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'OK';
+            closeBtn.style.cssText = `
+                padding: 0.5rem 1rem;
+                border: none;
+                border-radius: 6px;
+                background: #3B82F6;
+                color: white;
+                cursor: pointer;
+            `;
+            closeBtn.onclick = () => modal.remove();
+
+            modal.appendChild(messageP);
+            modal.appendChild(closeBtn);
+            document.body.appendChild(modal);
+
+            const styleSheet = document.createElement('style');
+            styleSheet.innerHTML = `@keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -60%); } to { opacity: 1; transform: translate(-50%, -50%); } }`;
+            document.head.appendChild(styleSheet);
+        }
+
+
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default dates
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            document.getElementById('checkin').value = formatDate(today);
+            document.getElementById('checkout').value = formatDate(tomorrow);
+
+            // Add smooth scrolling for navigation
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Add header scroll effect
+            let lastScrollY = window.scrollY;
+            window.addEventListener('scroll', () => {
+                const header = document.querySelector('.header');
+                if (window.scrollY > lastScrollY && window.scrollY > 100) {
+                    header.style.transform = 'translateY(-100%)';
+                } else {
+                    header.style.transform = 'translateY(0)';
+                }
+                lastScrollY = window.scrollY;
+            });
+
+            // Mobile menu functionality (as before)
+            function createMobileMenu() {
+                if (window.innerWidth <= 768) {
+                    const navContainer = document.querySelector('.nav-container');
+                    const navLinks = document.querySelector('.nav-links');
+
+                    // Create hamburger menu if it doesn't exist
+                    let mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+                    if (!mobileMenuBtn) {
+                        mobileMenuBtn = document.createElement('button');
+                        mobileMenuBtn.className = 'mobile-menu-btn';
+                        mobileMenuBtn.innerHTML = '☰';
+                        mobileMenuBtn.style.cssText = `
+                            background: none;
+                            border: none;
+                            font-size: 1.5rem;
+                            cursor: pointer;
+                            color: #374151;
+                            padding: 0.5rem;
+                            display: block;
+                        `;
+
+                        mobileMenuBtn.addEventListener('click', () => {
+                            const isVisible = navLinks.style.display === 'flex';
+                            navLinks.style.display = isVisible ? 'none' : 'flex';
+                            navLinks.style.flexDirection = 'column';
+                            navLinks.style.position = 'absolute';
+                            navLinks.style.top = '100%';
+                            navLinks.style.left = '0';
+                            navLinks.style.right = '0';
+                            navLinks.style.background = 'white';
+                            navLinks.style.box-shadow = '0 10px 25px rgba(0,0,0,0.1)';
+                            navLinks.style.padding = '1rem';
+                            navLinks.style.zIndex = '1000';
+                            navLinks.style.borderTop = '1px solid #E5E7EB';
+                        });
+
+                        // Insert before nav-actions
+                        navContainer.insertBefore(mobileMenuBtn, navContainer.querySelector('.nav-actions'));
+                    }
+                }
+            }
+            window.addEventListener('load', createMobileMenu);
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    const navLinks = document.querySelector('.nav-links');
+                    const mobileBtn = document.querySelector('.mobile-menu-btn');
+
+                    navLinks.style.display = 'flex';
+                    navLinks.style.flexDirection = 'row';
+                    navLinks.style.position = 'static';
+                    navLinks.style.background = 'none';
+                    navLinks.style.boxShadow = 'none';
+                    navLinks.style.padding = '0';
+                    navLinks.style.borderTop = 'none';
+
+                    if (mobileBtn) {
+                        mobileBtn.style.display = 'none';
+                    }
+                } else {
+                    const mobileBtn = document.querySelector('.mobile-menu-btn');
+                    if (mobileBtn) {
+                        mobileBtn.style.display = 'block';
+                    }
+                }
+            });
+            // Initial render
+            filterStays();
+        });
+    </script>
+</body>
+</html>

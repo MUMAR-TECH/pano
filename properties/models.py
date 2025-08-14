@@ -51,20 +51,20 @@ class Property(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return reverse('property_detail', kwargs={'pk': self.pk})
+        return reverse('properties:property_detail', kwargs={'pk': self.pk})
     
-    @property
+    """@property
     def min_price(self):
         rooms = self.room_set.all()
         if rooms:
             return min(room.price_per_night for room in rooms)
-        return 0
+        return 0"""
 
 class PropertyImage(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='property_images/')
     caption = models.CharField(max_length=200, blank=True)
-    is_primary = models.BooleanField(default=False)
+    is_primary = models.BooleanField(default=False)  # This is the new field
     
     def __str__(self):
         return f"{self.property.name} - Image"
