@@ -108,7 +108,7 @@ body {
             </nav>
             <div class="nav-actions flex items-center space-x-4">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'accounts:dashboard' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Dashboard</a>
+                    <a href="{% url 'accounts:vendor_dashboard' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Dashboard</a>
                     <form action="{% url 'accounts:logout' %}" method="post">
                         {% csrf_token %}
                         <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200">Logout</button>

@@ -3,6 +3,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+
+from accounts.decorator import role_required
 from .models import Profile, User, VendorProfile
 
 from .forms import HostRegistrationForm, ResetPasswordForm, ForgotPasswordForm, UserLoginForm, UserCreationForm, UserProfileForm, UserRegistrationForm, OTPVerificationForm, VendorProfileForm
@@ -222,11 +224,11 @@ def user_login(request):
                         VendorProfile.objects.create(user=user)
                         return redirect('accounts:complete_vendor_profile')
                 else:
-                    return redirect('accounts:home')
+                    return redirect('properties:home')
 
                 # Redirect based on user role
                 if user.role == 'vendor':
-                    return redirect('accounts:host_dashboard')
+                    return redirect('accounts:vendor_dashboard')
                 elif user.role == 'customer':
                     return redirect('accounts:user_dashboard')
                 else:
@@ -370,10 +372,11 @@ from bookings.models import Booking
 from datetime import timedelta
 
 @login_required
+@role_required(allowed_roles=['vendor'])
 def vendor_dashboard(request):
     if request.user.role != 'vendor':
         messages.error(request, 'Access denied. Vendor account required.')
-        return redirect('home')
+        return redirect('properties:home')
     
     # Get vendor's properties
     properties = Property.objects.filter(owner=request.user)

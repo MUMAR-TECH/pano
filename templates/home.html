@@ -611,21 +611,53 @@
     <!-- Header -->
     <header class="header">
         <div class="nav-container">
-            <div class="logo">
+            <a href="{% url 'properties:home' %}">
+                <div class="logo">
                 <div class="logo-icon"></div>
                 StayHub
-            </div>
+                </div>
+            </a>
+            
             <nav class="nav-links">
                 <a href="#" onclick="scrollToSection('featured')">Find Stays</a>
                 <a href="#">About</a>
                 <a href="#">Contact</a>
                 <a href="#">Help</a>
             </nav>
-            <div class="nav-actions">
-                <button class="btn-host">Become a Host</button>
-                <button class="btn-signin">Sign in</button>
-                <button class="btn-signup">Sign Up</button>
-            </div>
+
+            {% if user.is_authenticated %}
+                <div class="nav-actions">
+                    {% if user.role == 'vendor'%}
+                        <a href="{% url 'accounts:vendor_dashboard' %}">
+                            <button class="btn-host">Dashboard</button>
+                        <a/>
+                    {% endif %}     
+                    
+                    <a href="{% url 'accounts:profile' %}">
+                        <button class="btn-signup">{{ user.get_full_name|default:user.username }}</button>
+                    </a>
+                    <a href="{% url 'accounts:logout' %}">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    </a>
+                </div>
+                
+            {% else %}
+                <div class="nav-actions">
+                    <a href="{% url 'accounts:register_host' %}">
+                        <button class="btn-host">Become a Host</button>
+                    <a/>     
+                    
+                    <a href="{% url 'accounts:login' %}">  
+                        <button class="btn-signin">Sign in</button>
+                    </a>
+                    
+                    <a href="{% url 'accounts:register' %}">
+                        <button class="btn-signup">Sign Up</button>
+                    </a>
+                    
+                </div>
+            {% endif %}
+            
         </div>
     </header>
 
