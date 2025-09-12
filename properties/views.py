@@ -30,7 +30,7 @@ class HomeView(TemplateView):
         ).annotate(
             avg_rating=Avg('reviews__rating'),
             review_count=Count('reviews'),
-            #min_price=Min('room__price_per_night')
+            min_price=Min('room__price_per_night')
         ).prefetch_related('images').order_by('-avg_rating')[:6]
 
         # Now we need to process the queryset to get the primary image URL and amenities
@@ -61,7 +61,7 @@ class HomeView(TemplateView):
                 'type': prop.property_type,
                 'rating': prop.avg_rating or 0,
                 'reviews': prop.review_count,
-                #'price': prop.min_price or 0,
+                'price': prop.min_price or 0,
                 'image_url': primary_image_url,
                 'amenities': amenities,
                 'url': prop.get_absolute_url(),

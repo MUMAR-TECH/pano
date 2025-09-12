@@ -347,6 +347,25 @@
             border: 1px solid #F3F4F6;
         }
 
+        .stay-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .stay-card-link:hover {
+            text-decoration: none;
+        }
+
+        .stay-card-link:focus {
+            outline: none;
+        }
+
+        .stay-card-link:focus .stay-card {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
         .stay-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
@@ -730,6 +749,7 @@
             <div class="stays-grid" id="staysGrid">
                 <!-- Django template loop for dynamic stay cards -->
                 {% for stay in featured_stays %}
+                
                 <div class="stay-card" data-stay-id="{{ stay.id }}" data-type="{{ stay.type }}" data-price="{{ stay.price }}" data-rating="{{ stay.rating }}" data-reviews="{{ stay.reviews }}">
                     <div class="card-image" style="background-image: url('{{ stay.image_url }}');">
                         <div class="card-badge {% if stay.type == 'hostel' %}badge-hostel{% else %}badge-lodge{% endif %}">{{ stay.type|capfirst }}</div>
@@ -933,6 +953,19 @@
 
             showModal(`📍 ${name}\n💰 ${price}/night\n${rating} (${reviews})\n📍 ${location}\n\n✨ Amenities: ${amenities}`, 'info');
         }
+
+        // Prevent card clicks from triggering when clicking on interactive elements
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.stay-card-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Don't navigate if clicking on filter buttons or other interactive elements
+                    if (e.target.closest('.filter-btn') || e.target.closest('.sort-select')) {
+                        e.preventDefault();
+                        return;
+                    }
+                });
+            });
+        });
 
         // Custom Modal implementation instead of alert()
         function showModal(message, type = 'info') {
