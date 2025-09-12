@@ -5,193 +5,354 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}StayHub - Find Your Perfect Hostel & Lodge{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8',
+                        },
+                        accent: {
+                            500: '#10B981',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #1f2937;
         }
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            padding: 1rem 2rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease;
+        
+        .hero-pattern {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                        url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') center/cover;
         }
-        .header-hidden {
+        
+        .stay-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stay-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .search-form-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Custom animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        /* Mobile menu animation */
+        .mobile-menu {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
             transform: translateY(-100%);
+            opacity: 0;
         }
-        /* Custom styles for responsiveness and animations */
-        @media (max-width: 768px) {
-            .nav-links {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background-color: #ffffff;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                flex-direction: column;
-                align-items: center;
-                padding: 1rem;
-                display: none;
-            }
-            .nav-links.active {
-                display: flex;
-            }
+        
+        .mobile-menu.open {
+            transform: translateY(0);
+            opacity: 1;
         }
-        /* Custom styles can be added here to override or extend Tailwind CSS */
-
-/* Set body font family and background color */
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f8fafc;
-}
-
-/* Custom header scroll effect class */
-.header-hidden {
-    transform: translateY(-100%);
-}
-
-/* Custom styles for the stay-card animation */
-.stay-card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.stay-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transform: translateY(-8px);
-}
-
-.stay-card img {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.stay-card:hover img {
-    transform: scale(1.05);
-}
-
-/* Custom styles for the mobile menu button */
-.mobile-menu-btn {
-    z-index: 1001;
-}
-
-/* Custom styling for the featured properties section */
-.featured-stays-section {
-    padding-top: 4rem;
-    padding-bottom: 4rem;
-}
-
+        
+        /* Overlay for mobile menu */
+        .menu-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease-in-out;
+        }
     </style>
-    {% block head_extra %}
-    {% endblock %}
+    
+    {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-50 text-gray-800">
-    <header class="header flex items-center justify-between p-4 bg-white shadow-md">
-        <div class="nav-container container mx-auto flex justify-between items-center px-4">
-            <a href="{% url 'properties:home' %}" class="flex items-center space-x-2 text-2xl font-bold text-indigo-600">
-                <i class="fa-solid fa-house-chimney"></i>
-                <span>StayHub</span>
+<body class="bg-gray-50" x-data="{ mobileMenuOpen: false }">
+    <!-- Header -->
+    <header class="fixed w-full bg-white bg-opacity-95 backdrop-blur-sm z-50 py-4 px-6 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="{% url 'properties:home' %}" class="flex items-center gap-2 text-xl font-bold text-gray-900">
+                <div class="w-5 h-5 bg-accent-500 rounded-full relative">
+                    <div class="absolute inset-1 bg-white rounded-full"></div>
+                </div>
+                StayHub
             </a>
-            <nav class="hidden md:flex items-center space-x-8 nav-links">
-                <a href="{% url 'properties:home' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Home</a>
-                <a href="{% url 'properties:property_list' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Find a Stay</a>
-                <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">About Us</a>
-                <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Contact</a>
+            
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="{% url 'properties:property_list' %}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Find Stays</a>
+                <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">About</a>
+                <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Contact</a>
+                <a href="#" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">Help</a>
             </nav>
-            <div class="nav-actions flex items-center space-x-4">
+
+            <div class="flex items-center gap-4">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'accounts:vendor_dashboard' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Dashboard</a>
-                    <form action="{% url 'accounts:logout' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200">Logout</button>
-                    </form>
+                    {% if user.role == 'vendor' %}
+                        <a href="{% url 'accounts:vendor_dashboard' %}" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium transition-colors">
+                            Dashboard
+                        </a>
+                    {% endif %}
+                    
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-600 transition-colors">
+                            <i class="fas fa-user-circle"></i>
+                            {{ user.get_full_name|default:user.username|truncatechars:12 }}
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                            <a href="{% url 'accounts:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i> Profile
+                            </a>
+                            <a href="{% url 'bookings:booking_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-calendar-alt mr-2"></i> My Bookings
+                            </a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                    
                 {% else %}
-                    <a href="{% url 'accounts:login' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Login</a>
-                    <a href="{% url 'accounts:register' %}" class="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-200">Sign Up</a>
+                    <a href="{% url 'accounts:register_host' %}" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium transition-colors">
+                        Become a Host
+                    </a>
+                    
+                    <a href="{% url 'accounts:login' %}" class="hidden md:block text-gray-600 hover:text-gray-900 font-medium transition-colors">
+                        Sign in
+                    </a>
+                    
+                    <a href="{% url 'accounts:register' %}" class="hidden md:block bg-primary-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-600 transition-colors">
+                        Sign Up
+                    </a>
                 {% endif %}
+                
+                <!-- Mobile menu button -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-gray-600">
+                    <i x-show="!mobileMenuOpen" class="fas fa-bars text-xl"></i>
+                    <i x-show="mobileMenuOpen" class="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <button class="md:hidden mobile-menu-btn text-gray-800 focus:outline-none">
-                <i class="fa-solid fa-bars fa-xl"></i>
-            </button>
         </div>
     </header>
-    <main class="mt-20">
-        {% if messages %}
-            <div class="container mx-auto mt-4 px-4">
-                {% for message in messages %}
-                    <div class="p-4 mb-4 text-sm rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+
+    <!-- Mobile menu overlay -->
+    <div x-show="mobileMenuOpen" @click="mobileMenuOpen = false" 
+         class="menu-overlay fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
+         :class="mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+         x-transition>
+    </div>
+
+    <!-- Mobile menu -->
+    <div x-show="mobileMenuOpen" x-transition
+         class="mobile-menu fixed top-16 left-0 right-0 bg-white z-50 shadow-lg md:hidden"
+         :class="mobileMenuOpen ? 'open' : ''">
+        <nav class="flex flex-col py-4 px-6">
+            <a href="{% url 'properties:property_list' %}" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center">
+                <i class="fas fa-search mr-3 text-primary-500"></i> Find Stays
+            </a>
+            <a href="#" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center">
+                <i class="fas fa-info-circle mr-3 text-primary-500"></i> About
+            </a>
+            <a href="#" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center">
+                <i class="fas fa-envelope mr-3 text-primary-500"></i> Contact
+            </a>
+            <a href="#" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center">
+                <i class="fas fa-question-circle mr-3 text-primary-500"></i> Help
+            </a>
+            
+            {% if user.is_authenticated %}
+                {% if user.role == 'vendor' %}
+                    <a href="{% url 'accounts:vendor_dashboard' %}" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center">
+                        <i class="fas fa-tachometer-alt mr-3 text-primary-500"></i> Dashboard
+                    </a>
+                {% endif %}
+                <a href="{% url 'accounts:profile' %}" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center">
+                    <i class="fas fa-user mr-3 text-primary-500"></i> Profile
+                </a>
+                <a href="{% url 'bookings:booking_list' %}" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center">
+                    <i class="fas fa-calendar-alt mr-3 text-primary-500"></i> My Bookings
+                </a>
+                <a href="{% url 'accounts:logout' %}" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center">
+                    <i class="fas fa-sign-out-alt mr-3 text-primary-500"></i> Logout
+                </a>
+            {% else %}
+                <div class="border-t border-gray-200 my-2 pt-4">
+                    <a href="{% url 'accounts:login' %}" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center">
+                        <i class="fas fa-sign-in-alt mr-3 text-primary-500"></i> Sign in
+                    </a>
+                    <a href="{% url 'accounts:register' %}" class="py-3 px-4 bg-primary-50 text-primary-700 hover:bg-primary-100 rounded-lg font-medium flex items-center mt-2">
+                        <i class="fas fa-user-plus mr-3 text-primary-500"></i> Sign Up
+                    </a>
+                    <a href="{% url 'accounts:register_host' %}" class="py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-lg font-medium flex items-center mt-2">
+                        <i class="fas fa-home mr-3 text-primary-500"></i> Become a Host
+                    </a>
+                </div>
+            {% endif %}
+        </nav>
+    </div>
+
+    <main class="pt-16">
         {% block content %}
         {% endblock %}
     </main>
-    <footer class="bg-gray-800 text-white p-8 mt-16">
-        <div class="container mx-auto flex flex-wrap justify-between">
-            <div class="w-full md:w-1/3 mb-6 md:mb-0">
-                <h3 class="text-xl font-bold text-indigo-400">StayHub</h3>
-                <p class="mt-2 text-gray-400">Find and book the perfect stay for your next adventure.</p>
-            </div>
-            <div class="w-1/2 md:w-1/6 mb-6 md:mb-0">
-                <h4 class="font-semibold text-white">Company</h4>
-                <ul class="mt-2 space-y-2 text-gray-400">
-                    <li><a href="#" class="hover:text-indigo-400">About Us</a></li>
-                    <li><a href="#" class="hover:text-indigo-400">Careers</a></li>
-                    <li><a href="#" class="hover:text-indigo-400">Press</a></li>
-                </ul>
-            </div>
-            <div class="w-1/2 md:w-1/6 mb-6 md:mb-0">
-                <h4 class="font-semibold text-white">Support</h4>
-                <ul class="mt-2 space-y-2 text-gray-400">
-                    <li><a href="#" class="hover:text-indigo-400">Help Center</a></li>
-                    <li><a href="#" class="hover:text-indigo-400">Contact Us</a></li>
-                    <li><a href="#" class="hover:text-indigo-400">Privacy Policy</a></li>
-                </ul>
-            </div>
-            <div class="w-full md:w-1/3">
-                <h4 class="font-semibold text-white">Connect with Us</h4>
-                <div class="flex space-x-4 mt-2">
-                    <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-twitter fa-lg"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-facebook-f fa-lg"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-instagram fa-lg"></i></a>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 px-6">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <div class="flex items-center gap-2 text-xl font-bold mb-4">
+                    <div class="w-5 h-5 bg-accent-500 rounded-full relative">
+                        <div class="absolute inset-1 bg-white rounded-full"></div>
+                    </div>
+                    StayHub
+                </div>
+                <p class="text-gray-400 mb-4">Connecting travelers with unique hostels and lodges worldwide. Your adventure starts here.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
                 </div>
             </div>
+            
+            <div>
+                <h4 class="font-semibold mb-4">Company</h4>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Press</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold mb-4">Support</h4>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Safety</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Cancellation</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold mb-4">Contact</h4>
+                <ul class="space-y-2">
+                    <li><a href="mailto:support@stayhub.com" class="text-gray-400 hover:text-white transition-colors">support@stayhub.com</a></li>
+                    <li><a href="tel:+15551234567" class="text-gray-400 hover:text-white transition-colors">+1 (555) 123-4567</a></li>
+                </ul>
+            </div>
         </div>
-        <div class="mt-8 text-center text-gray-500">
-            &copy; 2024 StayHub. All rights reserved.
+        
+        <div class="max-w-7xl mx-auto border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+            <p>© 2024 StayHub. All rights reserved. | <a href="#" class="hover:text-white transition-colors">Privacy Policy</a> | <a href="#" class="hover:text-white transition-colors">Terms of Service</a></p>
         </div>
     </footer>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Header scroll effect
-            let lastScrollY = window.scrollY;
-            window.addEventListener('scroll', () => {
-                const header = document.querySelector('.header');
-                if (window.scrollY > lastScrollY && window.scrollY > 100) {
-                    header.classList.add('header-hidden');
-                } else {
-                    header.classList.remove('header-hidden');
-                }
-                lastScrollY = window.scrollY;
-            });
 
-            // Mobile menu toggle
-            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-            const navLinks = document.querySelector('.nav-links');
-            mobileMenuBtn.addEventListener('click', () => {
-                navLinks.classList.toggle('active');
-            });
+    <script>
+        // Alpine.js data for mobile menu
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('main', () => ({
+                searchParams: {
+                    destination: '',
+                    checkin: '',
+                    checkout: '',
+                    guests: '1'
+                },
+                activeFilter: 'all',
+                sortBy: 'price',
+                
+                init() {
+                    // Set default dates
+                    const today = new Date();
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    
+                    this.searchParams.checkin = today.toISOString().split('T')[0];
+                    this.searchParams.checkout = tomorrow.toISOString().split('T')[0];
+                },
+                
+                searchStays() {
+                    if (!this.searchParams.destination) {
+                        this.showToast('Please enter a destination', 'error');
+                        return;
+                    }
+                    
+                    // In a real app, this would redirect to search results
+                    this.showToast(`Searching for stays in ${this.searchParams.destination}`, 'info');
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                        document.getElementById('featured').scrollIntoView({ behavior: 'smooth' });
+                    }, 1000);
+                },
+                
+                setFilter(filter) {
+                    this.activeFilter = filter;
+                    // Filter logic would go here in a real implementation
+                },
+                
+                showToast(message, type = 'info') {
+                    // Create toast element
+                    const toast = document.createElement('div');
+                    toast.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${type === 'error' ? 'bg-red-500' : 'bg-primary-500'} text-white`;
+                    toast.textContent = message;
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    
+                    document.body.appendChild(toast);
+                    
+                    // Animate in
+                    setTimeout(() => {
+                        toast.style.opacity = '1';
+                        toast.style.transform = 'translateX(0)';
+                    }, 10);
+                    
+                    // Remove after delay
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateX(100%)';
+                        setTimeout(() => {
+                            document.body.removeChild(toast);
+                        }, 300);
+                    }, 3000);
+                }
+            }));
         });
     </script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

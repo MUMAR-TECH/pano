@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}StayHub - Find Your Perfect Hostel & Lodge{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1f2937;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+        .header-hidden {
+            transform: translateY(-100%);
+        }
+        /* Custom styles for responsiveness and animations */
+        @media (max-width: 768px) {
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background-color: #ffffff;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                flex-direction: column;
+                align-items: center;
+                padding: 1rem;
+                display: none;
+            }
+            .nav-links.active {
+                display: flex;
+            }
+        }
+        /* Custom styles can be added here to override or extend Tailwind CSS */
+
+/* Set body font family and background color */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
+}
+
+/* Custom header scroll effect class */
+.header-hidden {
+    transform: translateY(-100%);
+}
+
+/* Custom styles for the stay-card animation */
+.stay-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stay-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-8px);
+}
+
+.stay-card img {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stay-card:hover img {
+    transform: scale(1.05);
+}
+
+/* Custom styles for the mobile menu button */
+.mobile-menu-btn {
+    z-index: 1001;
+}
+
+/* Custom styling for the featured properties section */
+.featured-stays-section {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+}
+
+    </style>
+    {% block head_extra %}
+    {% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <header class="header flex items-center justify-between p-4 bg-white shadow-md">
+        <div class="nav-container container mx-auto flex justify-between items-center px-4">
+            <a href="{% url 'properties:home' %}" class="flex items-center space-x-2 text-2xl font-bold text-indigo-600">
+                <i class="fa-solid fa-house-chimney"></i>
+                <span>StayHub</span>
+            </a>
+            <nav class="hidden md:flex items-center space-x-8 nav-links">
+                <a href="{% url 'properties:home' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Home</a>
+                <a href="{% url 'properties:property_list' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Find a Stay</a>
+                <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">About Us</a>
+                <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Contact</a>
+            </nav>
+            <div class="nav-actions flex items-center space-x-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:vendor_dashboard' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Dashboard</a>
+                    <form action="{% url 'accounts:logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-200">Sign Up</a>
+                {% endif %}
+            </div>
+            <button class="md:hidden mobile-menu-btn text-gray-800 focus:outline-none">
+                <i class="fa-solid fa-bars fa-xl"></i>
+            </button>
+        </div>
+    </header>
+    <main class="mt-20">
+        {% if messages %}
+            <div class="container mx-auto mt-4 px-4">
+                {% for message in messages %}
+                    <div class="p-4 mb-4 text-sm rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer class="bg-gray-800 text-white p-8 mt-16">
+        <div class="container mx-auto flex flex-wrap justify-between">
+            <div class="w-full md:w-1/3 mb-6 md:mb-0">
+                <h3 class="text-xl font-bold text-indigo-400">StayHub</h3>
+                <p class="mt-2 text-gray-400">Find and book the perfect stay for your next adventure.</p>
+            </div>
+            <div class="w-1/2 md:w-1/6 mb-6 md:mb-0">
+                <h4 class="font-semibold text-white">Company</h4>
+                <ul class="mt-2 space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-indigo-400">About Us</a></li>
+                    <li><a href="#" class="hover:text-indigo-400">Careers</a></li>
+                    <li><a href="#" class="hover:text-indigo-400">Press</a></li>
+                </ul>
+            </div>
+            <div class="w-1/2 md:w-1/6 mb-6 md:mb-0">
+                <h4 class="font-semibold text-white">Support</h4>
+                <ul class="mt-2 space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-indigo-400">Help Center</a></li>
+                    <li><a href="#" class="hover:text-indigo-400">Contact Us</a></li>
+                    <li><a href="#" class="hover:text-indigo-400">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="w-full md:w-1/3">
+                <h4 class="font-semibold text-white">Connect with Us</h4>
+                <div class="flex space-x-4 mt-2">
+                    <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-facebook-f fa-lg"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-instagram fa-lg"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="mt-8 text-center text-gray-500">
+            &copy; 2024 StayHub. All rights reserved.
+        </div>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Header scroll effect
+            let lastScrollY = window.scrollY;
+            window.addEventListener('scroll', () => {
+                const header = document.querySelector('.header');
+                if (window.scrollY > lastScrollY && window.scrollY > 100) {
+                    header.classList.add('header-hidden');
+                } else {
+                    header.classList.remove('header-hidden');
+                }
+                lastScrollY = window.scrollY;
+            });
+
+            // Mobile menu toggle
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const navLinks = document.querySelector('.nav-links');
+            mobileMenuBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html>
