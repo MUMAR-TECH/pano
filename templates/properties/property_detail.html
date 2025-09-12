@@ -1,6 +1,148 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+    /* Gallery Styles */
+    .gallery-container {
+        position: relative;
+    }
+    
+    .main-media {
+        height: 500px;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .main-media img,
+    .main-media iframe {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .media-thumbnails {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 8px;
+    }
+    
+    .thumbnail {
+        height: 100px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .thumbnail.active {
+        border-color: #3B82F6;
+    }
+    
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .thumbnail.video::after {
+        content: '▶';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        background: rgba(0, 0, 0, 0.7);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+    
+    .media-nav {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 16px;
+        transform: translateY(-50%);
+        z-index: 10;
+    }
+    
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-btn:hover {
+        background: #3B82F6;
+        color: white;
+    }
+    
+    .media-counter {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+    
+    /* Video modal */
+    .video-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .video-modal.active {
+        display: flex;
+    }
+    
+    .video-modal-content {
+        width: 80%;
+        max-width: 800px;
+        position: relative;
+    }
+    
+    .close-modal {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        background: none;
+        border: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 py-8">
     <!-- Property Header -->
@@ -20,31 +162,130 @@
         </div>
     </div>
 
-    <!-- Image Gallery -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
-        {% if property.images.all %}
-            <div class="lg:col-span-2 lg:row-span-2">
-                <img src="{{ property.images.first.image.url }}" 
-                     alt="{{ property.name }}" 
-                     class="w-full h-80 lg:h-full object-cover rounded-xl">
-            </div>
-            {% for image in property.images.all|slice:"1:5" %}
-                <div class="hidden lg:block">
-                    <img src="{{ image.image.url }}" 
-                         alt="{{ property.name }}" 
-                         class="w-full h-40 object-cover rounded-xl">
-                </div>
+    <!-- Enhanced Media Gallery -->
+    <div class="gallery-container mb-8" x-data="{
+        currentIndex: 0,
+        mediaItems: [
+            {% for image in property.images.all %}
+                { type: 'image', url: '{{ image.image.url }}', id: {{ forloop.counter }} },
             {% endfor %}
-        {% else %}
-            <div class="lg:col-span-4 h-80 bg-gray-200 rounded-xl flex items-center justify-center">
-                <i class="fas fa-image text-gray-400 text-6xl"></i>
+            {% for video in property.videos.all %}
+                { 
+                    type: 'video', 
+                    url: '{% if video.youtube_link %}https://www.youtube.com/embed/{{ video.youtube_id }}{% else %}{{ video.video.url }}{% endif %}', 
+                    id: {{ forloop.counter|add:property.images.count }},
+                    isYouTube: {% if video.youtube_link %}true{% else %}false{% endif %}
+                },
+            {% endfor %}
+        ],
+        get totalMedia() {
+            return this.mediaItems.length;
+        },
+        get currentMedia() {
+            return this.mediaItems[this.currentIndex];
+        },
+        next() {
+            this.currentIndex = (this.currentIndex + 1) % this.totalMedia;
+        },
+        prev() {
+            this.currentIndex = (this.currentIndex - 1 + this.totalMedia) % this.totalMedia;
+        },
+        goTo(index) {
+            this.currentIndex = index;
+        }
+    }">
+        <!-- Main Media Display -->
+        <div class="main-media">
+            <template x-if="currentMedia.type === 'image'">
+                <img :src="currentMedia.url" :alt="'{{ property.name }} image ' + (currentIndex + 1)" class="w-full h-full object-cover">
+            </template>
+            <template x-if="currentMedia.type === 'video' && currentMedia.isYouTube">
+                <iframe :src="currentMedia.url" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </template>
+            <template x-if="currentMedia.type === 'video' && !currentMedia.isYouTube">
+                <video controls class="w-full h-full object-cover">
+                    <source :src="currentMedia.url" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </template>
+            
+            <!-- Navigation Buttons -->
+            <div class="media-nav" x-show="totalMedia > 1">
+                <button @click="prev()" class="nav-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button @click="next()" class="nav-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
-        {% endif %}
+            
+            <!-- Media Counter -->
+            <div class="media-counter" x-show="totalMedia > 1">
+                <span x-text="currentIndex + 1"></span>/<span x-text="totalMedia"></span>
+            </div>
+        </div>
+
+        <!-- Thumbnails -->
+        <div class="media-thumbnails" x-show="totalMedia > 1">
+            <template x-for="(media, index) in mediaItems" :key="media.id">
+                <div 
+                    @click="goTo(index)" 
+                    :class="['thumbnail', { 
+                        'active': currentIndex === index,
+                        'video': media.type === 'video'
+                    }]"
+                >
+                    <template x-if="media.type === 'image'">
+                        <img :src="media.url" :alt="'Thumbnail ' + (index + 1)">
+                    </template>
+                    <template x-if="media.type === 'video'">
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-play text-primary-500 text-lg"></i>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Left Column - Property Details -->
         <div class="lg:col-span-2">
+            <!-- Quick Facts -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Facts</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-bed text-primary-500"></i>
+                        </div>
+                        <p class="text-sm text-gray-600">Rooms</p>
+                        <p class="font-semibold">{{ property.room_set.count }}</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-star text-primary-500"></i>
+                        </div>
+                        <p class="text-sm text-gray-600">Rating</p>
+                        <p class="font-semibold">{{ avg_rating|default:"0.0" }}/5</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-map-marker-alt text-primary-500"></i>
+                        </div>
+                        <p class="text-sm text-gray-600">Location</p>
+                        <p class="font-semibold">{{ property.city }}</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-building text-primary-500"></i>
+                        </div>
+                        <p class="text-sm text-gray-600">Type</p>
+                        <p class="font-semibold">{{ property.get_property_type_display }}</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Property Description -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">About this property</h2>
@@ -161,7 +402,7 @@
 
             <!-- Reviews -->
             <div class="bg-white rounded-xl shadow-sm p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-6">Reviews</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">Guest Reviews</h2>
                 
                 {% if reviews %}
                     <div class="space-y-6">
@@ -197,7 +438,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-gray-600 text-center py-4">No reviews yet.</p>
+                    <p class="text-gray-600 text-center py-4">No reviews yet. Be the first to review this property!</p>
                 {% endif %}
                 
                 {% if user.is_authenticated %}
@@ -268,4 +509,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize gallery functionality
+    document.addEventListener('alpine:init', () => {
+        // Gallery functionality is handled by Alpine.js in the template
+    });
+</script>
 {% endblock %}

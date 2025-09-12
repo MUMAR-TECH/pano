@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Property, PropertyImage, Room, RoomImage, Review
+from .models import Property, PropertyImage, Room, RoomImage, Review, PropertyVideo
 
 class PropertyImageInline(admin.TabularInline):
     model = PropertyImage
@@ -33,3 +33,6 @@ class ReviewAdmin(admin.ModelAdmin):
     list_display = ['property', 'user', 'rating', 'created_at']
     list_filter = ['rating', 'created_at']
     search_fields = ['property__name', 'user__username']
+
+
+admin.site.register(PropertyVideo)
