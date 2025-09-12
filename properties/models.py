@@ -69,6 +69,38 @@ class PropertyImage(models.Model):
     def __str__(self):
         return f"{self.property.name} - Image"
 
+
+class PropertyVideo(models.Model):
+    property_instance = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='videos')  # Renamed from 'property'
+    video = models.FileField(upload_to='property_videos/', null=True, blank=True)
+    youtube_link = models.URLField(blank=True)
+    caption = models.CharField(max_length=200, blank=True)
+    is_primary = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.property_instance.name} - Video"
+    
+    @property
+    def is_youtube(self):
+        return bool(self.youtube_link)
+    
+    @property
+    def youtube_id(self):
+        if self.is_youtube:
+            # Extract YouTube ID from various URL formats
+            import re
+            patterns = [
+                r'(?:youtube\.com\/watch\?v=)([^&]+)',
+                r'(?:youtu\.be\/)([^&]+)',
+                r'(?:youtube\.com\/embed\/)([^&]+)'
+            ]
+            for pattern in patterns:
+                match = re.search(pattern, self.youtube_link)
+                if match:
+                    return match.group(1)
+        return None
+    
+
 class Room(models.Model):
     ROOM_TYPES = (
         ('single', 'Single'),
