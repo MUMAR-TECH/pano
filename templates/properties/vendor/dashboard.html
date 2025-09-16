@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Vendor Dashboard</h1>
+            <p class="text-gray-600">Welcome back, {{ request.user.get_full_name|default:request.user.username }}</p>
+        </div>
+        <div class="flex space-x-4">
+            <a href="{% url 'properties:vendor_properties' %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                <i class="fas fa-building mr-2"></i>All Properties
+            </a>
+            <a href="{% url 'bookings:vendor_bookings' %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                <i class="fas fa-calendar-alt mr-2"></i>All Bookings
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Properties -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-building text-blue-500 text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Total Properties</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_properties }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{% url 'properties:vendor_properties' %}" class="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                    View Properties <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Total Rooms -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-bed text-green-500 text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Total Rooms</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_rooms }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-sm text-gray-500">Across all properties</span>
+            </div>
+        </div>
+
+        <!-- Total Bookings -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-calendar-check text-purple-500 text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Total Bookings</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_bookings }}</p>
+                </div>
+            </div>
+            <div class="mt-2">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mr-2">
+                    {{ confirmed_bookings }} confirmed
+                </span>
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    {{ pending_bookings }} pending
+                </span>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-dollar-sign text-orange-500 text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Total Revenue</p>
+                    <p class="text-2xl font-bold text-gray-900">${{ total_revenue|floatformat:2 }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-sm text-gray-500">Lifetime earnings</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Recent Bookings -->
+        <div class="lg:col-span-2">
+            <!-- Recent Bookings -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Recent Bookings</h2>
+                    <a href="{% url 'bookings:vendor_bookings' %}" class="text-primary-500 hover:text-primary-600 text-sm font-medium">
+                        View All <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                    </a>
+                </div>
+
+                <div class="space-y-4">
+                    {% for booking in recent_bookings %}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">{{ booking.guest_name }}</h3>
+                                <p class="text-sm text-gray-600">{{ booking.room.property.name }} - {{ booking.room.name }}</p>
+                                <p class="text-sm text-gray-500">{{ booking.check_in_date|date:"M d" }} - {{ booking.check_out_date|date:"M d, Y" }} ({{ booking.total_nights }} nights)</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                                    {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
+                                    {% elif booking.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ booking.get_status_display }}
+                                </span>
+                                <p class="text-lg font-bold text-primary-500 mt-1">${{ booking.total_amount|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="text-sm text-gray-500">Booked {{ booking.created_at|timesince }} ago</span>
+                            <a href="{% url 'bookings:booking_detail' booking.id %}" class="text-primary-500 hover:text-primary-600 text-sm font-medium">
+                                View Details <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-calendar-times text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-600">No bookings yet</p>
+                        <p class="text-sm text-gray-500">Your bookings will appear here</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a href="{% url 'properties:add_property' %}" class="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:bg-blue-100 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-plus text-blue-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-blue-900">Add New Property</h3>
+                                <p class="text-sm text-blue-600">List a new property for booking</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'properties:vendor_properties' %}" class="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-building text-green-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-green-900">Manage Properties</h3>
+                                <p class="text-sm text-green-600">View and edit your properties</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'bookings:vendor_bookings' %}" class="bg-purple-50 border border-purple-200 rounded-lg p-4 hover:bg-purple-100 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-calendar-alt text-purple-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-purple-900">View Bookings</h3>
+                                <p class="text-sm text-purple-600">Manage all bookings</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="#" class="bg-orange-50 border border-orange-200 rounded-lg p-4 hover:bg-orange-100 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-chart-line text-orange-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-orange-900">View Reports</h3>
+                                <p class="text-sm text-orange-600">Analytics and insights</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Properties Overview -->
+        <div class="lg:col-span-1">
+            <!-- Properties Overview -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Properties Overview</h2>
+                    <a href="{% url 'properties:vendor_properties' %}" class="text-primary-500 hover:text-primary-600 text-sm font-medium">
+                        View All <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                    </a>
+                </div>
+
+                <div class="space-y-4">
+                    {% for property_stat in properties_with_stats|slice:":3" %}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900">{{ property_stat.property.name }}</h3>
+                                <p class="text-sm text-gray-600">{{ property_stat.property.city }}</p>
+                                
+                                <div class="flex items-center mt-2 space-x-4">
+                                    <span class="text-sm text-gray-500">
+                                        <i class="fas fa-bed mr-1"></i> {{ property_stat.room_count }} rooms
+                                    </span>
+                                    <span class="text-sm text-gray-500">
+                                        <i class="fas fa-calendar-check mr-1"></i> {{ property_stat.booking_count }} bookings
+                                    </span>
+                                </div>
+                                
+                                <p class="text-sm font-semibold text-green-600 mt-2">
+                                    ${{ property_stat.revenue|floatformat:2 }} revenue
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center ml-4">
+                                {% if property_stat.property.images.first %}
+                                <img src="{{ property_stat.property.images.first.image.url }}" alt="{{ property_stat.property.name }}" class="w-12 h-12 object-cover rounded-lg">
+                                {% else %}
+                                <i class="fas fa-image text-gray-400"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{% url 'properties:vendor_property_detail' property_stat.property.pk %}" class="text-primary-500 hover:text-primary-600 text-sm font-medium">
+                                Manage Property <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-building text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-600">No properties yet</p>
+                        <a href="{% url 'properties:add_property' %}" class="text-primary-500 hover:text-primary-600 font-medium text-sm">
+                            Add your first property
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">Performance Metrics</h2>
+                
+                <div class="space-y-4">
+                    <!-- Occupancy Rate -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">Occupancy Rate</span>
+                            <span class="text-sm font-bold text-primary-500">{{ occupancy_rate|floatformat:1 }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-primary-500 h-2 rounded-full" style="width: {{ occupancy_rate }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Conversion -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">Booking Conversion</span>
+                            <span class="text-sm font-bold text-green-500">
+                                {% if total_bookings > 0 %}
+                                    {{ confirmed_bookings|div:total_bookings|multiply:100|floatformat:1 }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: {% if total_bookings > 0 %}{{ confirmed_bookings|div:total_bookings|multiply:100 }}{% else %}0{% endif %}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Average Revenue -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">Avg. Booking Value</span>
+                            <span class="text-sm font-bold text-purple-500">
+                                {% if confirmed_bookings > 0 %}
+                                    ${{ total_revenue|div:confirmed_bookings|floatformat:2 }}
+                                {% else %}
+                                    $0.00
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full" style="width: 
+                                {% if confirmed_bookings > 0 %}
+                                    {% widthratio total_revenue|div:confirmed_bookings 100 1 %}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            "></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-lightbulb text-blue-500 mr-3"></i>
+                        <div>
+                            <h3 class="text-sm font-semibold text-blue-900">Performance Tip</h3>
+                            <p class="text-xs text-blue-700">Keep your property listings updated with high-quality photos to increase bookings.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

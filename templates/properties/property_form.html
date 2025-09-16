@@ -1,74 +1,227 @@
-{% extends 'base.html' %}
-
-{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Property{% endblock %}
+{% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title mb-0">
-                        {% if form.instance.pk %}
-                            Edit {{ form.instance.name }}
-                        {% else %}
-                            Add New Property
-                        {% endif %}
-                    </h2>
+<div class="max-w-4xl mx-auto px-6 py-8">
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">
+            {% if form.instance.pk %}Edit Property{% else %}Add New Property{% endif %}
+        </h1>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Basic Information -->
+                <div class="md:col-span-2">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
                 </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">
-                                {{ field.label }}
-                            </label>
-                            
-                            {% if field.field.widget.input_type == 'checkbox' %}
-                                <div class="form-check">
-                                    {{ field }}
-                                    <label class="form-check-label" for="{{ field.id_for_label }}">
-                                        {{ field.help_text }}
-                                    </label>
-                                </div>
-                            {% else %}
-                                {{ field }}
-                                {% if field.help_text %}
-                                    <small class="form-text text-muted">{{ field.help_text }}</small>
-                                {% endif %}
-                            {% endif %}
-                            
-                            {% if field.errors %}
-                            <div class="alert alert-danger mt-2">
-                                {{ field.errors }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                {% if form.instance.pk %}Update{% else %}Create{% endif %} Property
-                            </button>
-                            <a href="{% url 'properties:vendor_properties' %}" class="btn btn-secondary">Cancel</a>
-                        </div>
-                    </form>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Property Name</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+                    {{ form.property_type }}
+                    {% if form.property_type.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.property_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+                    {% endif %}
                 </div>
             </div>
-        </div>
+
+            <!-- Address Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="md:col-span-2">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Address Information</h2>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.address.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                    {{ form.city }}
+                    {% if form.city.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.city.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
+                    {{ form.state }}
+                    {% if form.state.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.state.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                    {{ form.country }}
+                    {% if form.country.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.country.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
+                    {{ form.postal_code }}
+                    {% if form.postal_code.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.postal_code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="md:col-span-2">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Website (Optional)</label>
+                    {{ form.website }}
+                    {% if form.website.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.website.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Amenities -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Amenities</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="flex items-center">
+                        {{ form.wifi }}
+                        <label for="{{ form.wifi.id_for_label }}" class="ml-2 text-sm text-gray-700">WiFi</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.parking }}
+                        <label for="{{ form.parking.id_for_label }}" class="ml-2 text-sm text-gray-700">Parking</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.restaurant }}
+                        <label for="{{ form.restaurant.id_for_label }}" class="ml-2 text-sm text-gray-700">Restaurant</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.gym }}
+                        <label for="{{ form.gym.id_for_label }}" class="ml-2 text-sm text-gray-700">Gym</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.pool }}
+                        <label for="{{ form.pool.id_for_label }}" class="ml-2 text-sm text-gray-700">Pool</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.spa }}
+                        <label for="{{ form.spa.id_for_label }}" class="ml-2 text-sm text-gray-700">Spa</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.pets_allowed }}
+                        <label for="{{ form.pets_allowed.id_for_label }}" class="ml-2 text-sm text-gray-700">Pets Allowed</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Status -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <input type="radio" id="active" name="is_active" value="true" 
+                               {% if form.instance.is_active or not form.instance.pk %}checked{% endif %} class="mr-2">
+                        <label for="active" class="text-sm text-gray-700">Active</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="inactive" name="is_active" value="false" 
+                               {% if not form.instance.is_active and form.instance.pk %}checked{% endif %} class="mr-2">
+                        <label for="inactive" class="text-sm text-gray-700">Inactive</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <a href="{% if form.instance.pk %}{% url 'properties:vendor_property_detail' form.instance.pk %}{% else %}{% url 'properties:vendor_properties' %}{% endif %}" 
+                   class="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-primary-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-600 transition-colors">
+                    {% if form.instance.pk %}Update Property{% else %}Create Property{% endif %}
+                </button>
+            </div>
+        </form>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    // Add Bootstrap classes to form fields
-    document.querySelectorAll('input, select, textarea').forEach(element => {
-        if (!element.classList.contains('form-check-input')) {
-            element.classList.add('form-control');
-        }
-    });
-</script>
+<style>
+    input[type="text"], input[type="email"], input[type="url"], input[type="tel"], select, textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    input[type="text"]:focus, input[type="email"]:focus, input[type="url"]:focus, input[type="tel"]:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.25rem;
+    }
+    
+    input[type="checkbox"]:checked {
+        background-color: #3B82F6;
+        border-color: #3B82F6;
+    }
+    
+    input[type="radio"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid #e5e7eb;
+    }
+    
+    input[type="radio"]:checked {
+        background-color: #3B82F6;
+        border-color: #3B82F6;
+    }
+</style>
 {% endblock %}

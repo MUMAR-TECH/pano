@@ -133,7 +133,7 @@ class PropertyDetailView(DetailView):
         return context
     
 
-    
+
 
 # views.py - Add this view
 from django.http import JsonResponse
@@ -303,17 +303,26 @@ class VendorPropertyListView(ListView):
 
 
 
+# properties/views.py - Update vendor_property_detail view
 @login_required
 def vendor_property_detail(request, pk):
     property = get_object_or_404(Property, pk=pk, owner=request.user)
     rooms = property.room_set.all()
+    
+    # Get all bookings for this property
     bookings = Booking.objects.filter(room__property=property).order_by('-created_at')
     
     # Calculate statistics
     total_bookings = bookings.count()
     confirmed_bookings = bookings.filter(status='confirmed').count()
-    total_revenue = bookings.filter(status='confirmed').aggregate(Sum('total_amount'))
-    avg_rating = property.reviews.aggregate(Avg('rating'))
+    
+    # Calculate total revenue from confirmed bookings
+    total_revenue = bookings.filter(status='confirmed').aggregate(
+        total=Sum('total_amount')
+    )['total'] or 0
+    
+    # Calculate average rating
+    avg_rating = property.reviews.aggregate(Avg('rating'))['rating__avg']
     
     context = {
         'property': property,
@@ -321,8 +330,70 @@ def vendor_property_detail(request, pk):
         'bookings': bookings[:5],  # Show only last 5 bookings
         'total_bookings': total_bookings,
         'confirmed_bookings': confirmed_bookings,
-        'total_revenue': total_revenue['total_amount__sum'],
-        'avg_rating': avg_rating['rating__avg']
+        'total_revenue': total_revenue,
+        'avg_rating': avg_rating
     }
     
     return render(request, 'properties/vendor/property_detail.html', context)
+
+
+@login_required
+def vendor_dashboard(request):
+    if request.user.role != 'vendor':
+        messages.error(request, 'Access denied. Vendor account required.')
+        return redirect('home')
+    
+    # Get vendor's properties
+    properties = Property.objects.filter(owner=request.user)
+    
+    # Calculate statistics
+    total_properties = properties.count()
+    total_rooms = Room.objects.filter(property__owner=request.user).count()
+    
+    # Get all bookings for vendor's properties
+    bookings = Booking.objects.filter(room__property__owner=request.user)
+    total_bookings = bookings.count()
+    confirmed_bookings = bookings.filter(status='confirmed').count()
+    pending_bookings = bookings.filter(status='pending').count()
+    
+    # Calculate total revenue
+    total_revenue = bookings.filter(status='confirmed').aggregate(
+        total=Sum('total_amount')
+    )['total'] or 0
+    
+    # Get recent bookings (last 5)
+    recent_bookings = bookings.order_by('-created_at')[:5]
+    
+    # Get properties with their booking counts
+    properties_with_stats = []
+    for property in properties:
+        property_bookings = bookings.filter(room__property=property)
+        property_revenue = property_bookings.filter(status='confirmed').aggregate(
+            total=Sum('total_amount')
+        )['total'] or 0
+        
+        properties_with_stats.append({
+            'property': property,
+            'booking_count': property_bookings.count(),
+            'revenue': property_revenue,
+            'room_count': property.room_set.count()
+        })
+    
+    # Get occupancy rate (simplified)
+    total_room_nights = sum(booking.total_nights for booking in bookings.filter(status='confirmed'))
+    available_room_nights = 365 * total_rooms  # Simplified calculation
+    occupancy_rate = (total_room_nights / available_room_nights * 100) if available_room_nights > 0 else 0
+    
+    context = {
+        'total_properties': total_properties,
+        'total_rooms': total_rooms,
+        'total_bookings': total_bookings,
+        'confirmed_bookings': confirmed_bookings,
+        'pending_bookings': pending_bookings,
+        'total_revenue': total_revenue,
+        'recent_bookings': recent_bookings,
+        'properties_with_stats': properties_with_stats,
+        'occupancy_rate': occupancy_rate
+    }
+    
+    return render(request, 'properties/vendor/dashboard.html', context)

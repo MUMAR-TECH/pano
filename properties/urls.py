@@ -29,4 +29,6 @@ urlpatterns = [
 
     # urls.py - Add this pattern
     path('availability/check/', views.check_availability, name='check_availability'),
+
+    path('vendor/dashboard/', views.vendor_dashboard, name='vendor_dashboard'),
 ]

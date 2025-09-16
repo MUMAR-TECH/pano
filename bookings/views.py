@@ -141,6 +141,7 @@ def create_booking(request):
 
 
 # bookings/views.py - Update payment view
+
 # bookings/views.py - Update payment view
 @login_required
 def payment(request, booking_id):
@@ -153,22 +154,16 @@ def payment(request, booking_id):
     if request.method == 'POST':
         payment_method = request.POST.get('payment_method', 'credit_card')
         
-        # Simulate payment processing with a small chance of failure
-        import random
-        import time
-        
-        # Simulate processing delay
-        time.sleep(2)
-        
-        # 90% success rate
-        payment_successful = random.random() < 0.9
-        
-        if payment_successful:
+        # Always succeed for demo purposes
+        try:
             # Update booking status
             booking.status = 'confirmed'
             booking.save()
             
             # Create payment record
+            import random
+            from django.utils import timezone
+            
             Payment.objects.create(
                 booking=booking,
                 payment_method=payment_method,
@@ -180,14 +175,14 @@ def payment(request, booking_id):
             
             messages.success(request, 'Payment successful! Your booking is confirmed.')
             return redirect('bookings:booking_detail', pk=booking_id)
-        else:
-            messages.error(request, 'Payment failed. Please try again or use a different payment method.')
+            
+        except Exception as e:
+            messages.error(request, f'Error processing payment: {str(e)}')
             return redirect('bookings:payment', booking_id=booking_id)
     
     return render(request, 'bookings/payment.html', {
         'booking': booking
     })
-
 
 @login_required
 def booking_detail(request, pk):
@@ -218,9 +213,9 @@ def cancel_booking(request, pk):
 
 @login_required
 def vendor_bookings(request):
-    if request.user.userprofile.user_type != 'vendor':
+    if request.user.role != 'vendor':
         messages.error(request, 'Access denied. Vendor account required.')
-        return redirect('home')
+        return redirect('properties:home')
     
     # Get all bookings for vendor's properties
     vendor_properties = request.user.property_set.all()

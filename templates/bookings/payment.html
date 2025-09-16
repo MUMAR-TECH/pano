@@ -2,13 +2,10 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% load math_filters %}
-
-
 {% block extra_css %}
 <style>
     .payment-container {
-        max-width: 1200px;
+        max-width: 1000px;
         margin: 0 auto;
     }
     
@@ -20,69 +17,10 @@
     }
     
     .payment-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
         color: white;
         padding: 2rem;
         text-align: center;
-    }
-    
-    .payment-progress {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 2rem;
-        margin: 2rem 0;
-    }
-    
-    .progress-step {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .step-number {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #e5e7eb;
-        color: #6b7280;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        transition: all 0.3s ease;
-    }
-    
-    .step-number.active {
-        background: #10B981;
-        color: white;
-    }
-    
-    .step-number.completed {
-        background: #3B82F6;
-        color: white;
-    }
-    
-    .step-text {
-        font-size: 0.875rem;
-        color: #6b7280;
-        font-weight: 500;
-    }
-    
-    .step-text.active {
-        color: #10B981;
-    }
-    
-    .step-text.completed {
-        color: #3B82F6;
-    }
-    
-    .progress-connector {
-        flex: 1;
-        height: 2px;
-        background: #e5e7eb;
-        max-width: 100px;
     }
     
     .payment-content {
@@ -91,7 +29,7 @@
     
     .payment-methods {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
         margin-bottom: 2rem;
     }
@@ -107,13 +45,11 @@
     
     .payment-method:hover {
         border-color: #3B82F6;
-        transform: translateY(-2px);
     }
     
     .payment-method.selected {
         border-color: #3B82F6;
         background: #eff6ff;
-        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
     }
     
     .payment-icon {
@@ -131,7 +67,6 @@
         border-radius: 8px;
         padding: 1.5rem;
         margin-top: 2rem;
-        animation: slideDown 0.3s ease;
     }
     
     .card-form {
@@ -166,38 +101,6 @@
     .form-input:focus {
         outline: none;
         border-color: #3B82F6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    .payment-summary {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 1.5rem;
-    }
-    
-    .summary-item {
-        display: flex;
-        justify-content: between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
-    
-    .summary-label {
-        flex: 1;
-        color: #6b7280;
-    }
-    
-    .summary-value {
-        font-weight: 500;
-    }
-    
-    .summary-total {
-        border-top: 2px solid #e5e7eb;
-        padding-top: 1rem;
-        margin-top: 1rem;
-        font-size: 1.25rem;
-        font-weight: bold;
-        color: #1f2937;
     }
     
     .pay-button {
@@ -217,12 +120,6 @@
     .pay-button:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
-    }
-    
-    .pay-button:disabled {
-        background: #9ca3af;
-        cursor: not-allowed;
-        transform: none;
     }
     
     .security-badge {
@@ -264,25 +161,34 @@
         100% { transform: rotate(360deg); }
     }
     
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .booking-summary {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
     }
     
-    .success-animation {
-        animation: successPulse 0.5s ease;
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
     }
     
-    @keyframes successPulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
+    .summary-label {
+        color: #6b7280;
+    }
+    
+    .summary-value {
+        font-weight: 500;
+    }
+    
+    .summary-total {
+        border-top: 2px solid #e5e7eb;
+        padding-top: 1rem;
+        margin-top: 1rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #1f2937;
     }
 </style>
 {% endblock %}
@@ -292,33 +198,10 @@
     <!-- Payment Header -->
     <div class="payment-header">
         <h1 class="text-2xl font-bold mb-2">Complete Your Payment</h1>
-        <p class="text-blue-100">Secure payment processed with bank-level encryption</p>
+        <p class="text-blue-100">Secure payment processing</p>
     </div>
 
-    <!-- Progress Steps -->
-    <div class="payment-progress">
-        <div class="progress-step">
-            <div class="step-number completed">1</div>
-            <div class="step-text completed">Booking Details</div>
-        </div>
-        <div class="progress-connector"></div>
-        <div class="progress-step">
-            <div class="step-number completed">2</div>
-            <div class="step-text completed">Guest Information</div>
-        </div>
-        <div class="progress-connector"></div>
-        <div class="progress-step">
-            <div class="step-number active">3</div>
-            <div class="step-text active">Payment</div>
-        </div>
-        <div class="progress-connector"></div>
-        <div class="progress-step">
-            <div class="step-number">4</div>
-            <div class="step-text">Confirmation</div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <!-- Left Column - Payment Form -->
         <div class="lg:col-span-2">
             <div class="payment-card">
@@ -334,17 +217,6 @@
                                 <i class="fas fa-credit-card"></i>
                             </div>
                             <h3 class="font-semibold mb-2">Credit Card</h3>
-                            <p class="text-sm text-gray-600">Visa, Mastercard, American Express</p>
-                        </div>
-                        
-                        <div class="payment-method" 
-                             :class="{ 'selected': paymentMethod === 'debit_card' }"
-                             @click="paymentMethod = 'debit_card'">
-                            <div class="payment-icon">
-                                <i class="fas fa-credit-card"></i>
-                            </div>
-                            <h3 class="font-semibold mb-2">Debit Card</h3>
-                            <p class="text-sm text-gray-600">All major debit cards</p>
                         </div>
                         
                         <div class="payment-method" 
@@ -354,32 +226,30 @@
                                 <i class="fab fa-paypal"></i>
                             </div>
                             <h3 class="font-semibold mb-2">PayPal</h3>
-                            <p class="text-sm text-gray-600">Fast and secure</p>
                         </div>
                     </div>
 
                     <!-- Card Payment Form -->
-                    <div x-show="paymentMethod === 'credit_card' || paymentMethod === 'debit_card'" 
-                         class="payment-details">
+                    <div x-show="paymentMethod === 'credit_card'" class="payment-details">
                         <h3 class="font-semibold mb-4">Card Details</h3>
                         
                         <div class="card-form">
                             <div class="form-group full-width">
                                 <label class="form-label">Card Number</label>
-                                <input type="text" x-model="cardNumber" placeholder="1234 5678 9012 3456" 
-                                       class="form-input" @input="formatCardNumber()">
+                                <input type="text" x-model="cardNumber" placeholder="Enter any 16-digit number" 
+                                       class="form-input">
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">Expiry Date</label>
                                 <input type="text" x-model="expiryDate" placeholder="MM/YY" 
-                                       class="form-input" @input="formatExpiryDate()" maxlength="5">
+                                       class="form-input">
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">CVV</label>
                                 <input type="text" x-model="cvv" placeholder="123" 
-                                       class="form-input" maxlength="4">
+                                       class="form-input">
                             </div>
                             
                             <div class="form-group full-width">
@@ -394,21 +264,23 @@
                     <div x-show="paymentMethod === 'paypal'" class="payment-details">
                         <div class="text-center py-8">
                             <i class="fab fa-paypal text-4xl text-blue-500 mb-4"></i>
-                            <p class="text-gray-600">You will be redirected to PayPal to complete your payment</p>
+                            <p class="text-gray-600">Click "Pay Now" to complete your payment</p>
                         </div>
                     </div>
 
                     <!-- Pay Button -->
-                    <button @click="processPayment()" :disabled="!isFormValid" 
-                            class="pay-button success-animation" x-bind:class="{ 'success-animation': isFormValid }">
-                        <span x-show="!isProcessing">Pay Now - ${{ booking.total_amount|floatformat:2 }}</span>
-                        <span x-show="isProcessing">Processing...</span>
-                    </button>
+                    <form method="post" id="payment-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="payment_method" x-model="paymentMethod">
+                        <button type="submit" class="pay-button">
+                            Pay Now - ${{ booking.total_amount|floatformat:2 }}
+                        </button>
+                    </form>
 
                     <!-- Security Badge -->
                     <div class="security-badge">
                         <i class="fas fa-lock"></i>
-                        <span>256-bit SSL Encryption | PCI DSS Compliant</span>
+                        <span>Secure payment</span>
                     </div>
                 </div>
             </div>
@@ -460,7 +332,7 @@
                         </div>
                     </div>
                     
-                    <div class="payment-summary">
+                    <div class="booking-summary">
                         <div class="summary-item">
                             <span class="summary-label">Room rate</span>
                             <span class="summary-value">${{ booking.room.price_per_night|floatformat:2 }} × {{ booking.total_nights }}</span>
@@ -471,13 +343,8 @@
                             <span class="summary-value">$15.00</span>
                         </div>
                         
-                        <div class="summary-item">
-                            <span class="summary-label">Tax</span>
-                            <span class="summary-value">${{ booking.total_amount|multiply:0.08|floatformat:2 }}</span>
-                        </div>
-                        
                         <div class="summary-total">
-                            <span>Total: ${{ booking.total_amount|add:15|add:booking.total_amount|multiply:0.08|floatformat:2 }}</span>
+                            <span>Total: ${{ booking.total_amount|floatformat:2 }}</span>
                         </div>
                     </div>
                     
@@ -492,13 +359,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Loading Overlay -->
-    <div x-show="isProcessing" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p class="text-lg font-semibold text-gray-700">Processing your payment...</p>
-        <p class="text-sm text-gray-600">Please don't close this window</p>
-    </div>
 </div>
 {% endblock %}
 
@@ -510,88 +370,7 @@
             cardNumber: '',
             expiryDate: '',
             cvv: '',
-            cardholderName: '',
-            isProcessing: false,
-            
-            get isFormValid() {
-                if (this.paymentMethod === 'credit_card' || this.paymentMethod === 'debit_card') {
-                    return this.cardNumber.replace(/\s/g, '').length === 16 &&
-                           this.expiryDate.length === 5 &&
-                           this.cvv.length >= 3 &&
-                           this.cardholderName.length > 0;
-                }
-                return true; // For PayPal, no validation needed
-            },
-            
-            formatCardNumber() {
-                // Remove all non-digit characters
-                let numbers = this.cardNumber.replace(/\D/g, '');
-                
-                // Limit to 16 digits
-                numbers = numbers.substring(0, 16);
-                
-                // Add spaces every 4 digits
-                this.cardNumber = numbers.replace(/(\d{4})/g, '$1 ').trim();
-            },
-            
-            formatExpiryDate() {
-                // Remove all non-digit characters
-                let numbers = this.expiryDate.replace(/\D/g, '');
-                
-                // Limit to 4 digits
-                numbers = numbers.substring(0, 4);
-                
-                // Add slash after 2 digits
-                if (numbers.length > 2) {
-                    this.expiryDate = numbers.substring(0, 2) + '/' + numbers.substring(2);
-                } else {
-                    this.expiryDate = numbers;
-                }
-            },
-            
-            async processPayment() {
-                if (!this.isFormValid) return;
-                
-                this.isProcessing = true;
-                
-                try {
-                    // Simulate payment processing delay
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    
-                    // Simulate 90% success rate
-                    const success = Math.random() < 0.9;
-                    
-                    if (success) {
-                        // Submit the form
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = '';
-                        
-                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = 'csrfmiddlewaretoken';
-                        csrfInput.value = csrfToken;
-                        form.appendChild(csrfInput);
-                        
-                        const methodInput = document.createElement('input');
-                        methodInput.type = 'hidden';
-                        methodInput.name = 'payment_method';
-                        methodInput.value = this.paymentMethod;
-                        form.appendChild(methodInput);
-                        
-                        document.body.appendChild(form);
-                        form.submit();
-                    } else {
-                        // Simulate payment failure
-                        alert('Payment failed. Please try again with a different payment method.');
-                        this.isProcessing = false;
-                    }
-                } catch (error) {
-                    alert('An error occurred during payment processing. Please try again.');
-                    this.isProcessing = false;
-                }
-            }
+            cardholderName: ''
         }
     }
 </script>

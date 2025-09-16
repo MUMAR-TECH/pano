@@ -1,128 +1,172 @@
-{% extends 'base.html' %}
-
-{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Room{% endblock %}
+{% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title mb-0">
-                        {% if form.instance.pk %}
-                            Edit Room - {{ form.instance.name }}
-                        {% else %}
-                            Add New Room to {{ property.name }}
-                        {% endif %}
-                    </h2>
-                </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.name.id_for_label }}" class="form-label">Room Name</label>
-                                    {{ form.name }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.room_type.id_for_label }}" class="form-label">Room Type</label>
-                                    {{ form.room_type }}
-                                </div>
-                            </div>
-                        </div>
+<div class="max-w-4xl mx-auto px-6 py-8">
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">
+            {% if form.instance.pk %}Edit Room{% else %}Add New Room{% endif %}
+        </h1>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.price_per_night.id_for_label }}" class="form-label">Price per Night</label>
-                                    {{ form.price_per_night }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.capacity.id_for_label }}" class="form-label">Capacity</label>
-                                    {{ form.capacity }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
-                            {{ form.description }}
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Room Amenities</label>
-                                <div class="form-check">
-                                    {{ form.air_conditioning }}
-                                    <label class="form-check-label" for="{{ form.air_conditioning.id_for_label }}">
-                                        Air Conditioning
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    {{ form.balcony }}
-                                    <label class="form-check-label" for="{{ form.balcony.id_for_label }}">
-                                        Balcony
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    {{ form.tv }}
-                                    <label class="form-check-label" for="{{ form.tv.id_for_label }}">
-                                        TV
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">&nbsp;</label>
-                                <div class="form-check">
-                                    {{ form.mini_bar }}
-                                    <label class="form-check-label" for="{{ form.mini_bar.id_for_label }}">
-                                        Mini Bar
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    {{ form.room_service }}
-                                    <label class="form-check-label" for="{{ form.room_service.id_for_label }}">
-                                        Room Service
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                {% if form.instance.pk %}Update{% else %}Add{% endif %} Room
-                            </button>
-
-                            {% if property %}
-                                <a href="{% url 'properties:vendor_property_detail' property.pk %}" class="btn btn-secondary">Cancel</a>
-                            {% else %}
-                                <a href="{% url 'properties:vendor_properties' %}" class="btn btn-secondary">Cancel</a>
-                            {% endif %}
-
-                        </div>
-                    </form>
-                </div>
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle text-blue-500 mr-3"></i>
+                <p class="text-blue-700">Adding room to: <strong>{{ property.name }}</strong></p>
             </div>
         </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Basic Information -->
+                <div class="md:col-span-2">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Room Name</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Room Type</label>
+                    {{ form.room_type }}
+                    {% if form.room_type.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.room_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Price per Night ($)</label>
+                    {{ form.price_per_night }}
+                    {% if form.price_per_night.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.price_per_night.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Capacity (Guests)</label>
+                    {{ form.capacity }}
+                    {% if form.capacity.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.capacity.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Total Rooms Available</label>
+                    {{ form.total_rooms }}
+                    {% if form.total_rooms.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.total_rooms.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Room Amenities -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Room Amenities</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="flex items-center">
+                        {{ form.air_conditioning }}
+                        <label for="{{ form.air_conditioning.id_for_label }}" class="ml-2 text-sm text-gray-700">Air Conditioning</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.balcony }}
+                        <label for="{{ form.balcony.id_for_label }}" class="ml-2 text-sm text-gray-700">Balcony</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.tv }}
+                        <label for="{{ form.tv.id_for_label }}" class="ml-2 text-sm text-gray-700">TV</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.mini_bar }}
+                        <label for="{{ form.mini_bar.id_for_label }}" class="ml-2 text-sm text-gray-700">Mini Bar</label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.room_service }}
+                        <label for="{{ form.room_service.id_for_label }}" class="ml-2 text-sm text-gray-700">Room Service</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Status -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <input type="radio" id="available" name="is_available" value="true" 
+                               {% if form.instance.is_available or not form.instance.pk %}checked{% endif %} class="mr-2">
+                        <label for="available" class="text-sm text-gray-700">Available</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="not_available" name="is_available" value="false" 
+                               {% if not form.instance.is_available and form.instance.pk %}checked{% endif %} class="mr-2">
+                        <label for="not_available" class="text-sm text-gray-700">Not Available</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'properties:vendor_property_detail' property.pk %}" 
+                   class="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-primary-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-600 transition-colors">
+                    {% if form.instance.pk %}Update Room{% else %}Add Room{% endif %}
+                </button>
+            </div>
+        </form>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    // Add Bootstrap classes to form fields
-    document.querySelectorAll('input:not([type="checkbox"]), select, textarea').forEach(element => {
-        element.classList.add('form-control');
-    });
+<style>
+    input[type="text"], input[type="number"], select, textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        transition: border-color 0.3s ease;
+    }
     
-    document.querySelectorAll('input[type="checkbox"]').forEach(element => {
-        element.classList.add('form-check-input');
-    });
-</script>
+    input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.25rem;
+    }
+    
+    input[type="checkbox"]:checked {
+        background-color: #3B82F6;
+        border-color: #3B82F6;
+    }
+    
+    input[type="radio"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid #e5e7eb;
+    }
+    
+    input[type="radio"]:checked {
+        background-color: #3B82F6;
+        border-color: #3B82F6;
+    }
+</style>
 {% endblock %}
