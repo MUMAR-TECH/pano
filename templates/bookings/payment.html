@@ -1,152 +1,414 @@
+<!-- bookings/payment.html -->
 {% extends "base.html" %}
 {% load static %}
 
+{% load math_filters %}
+
+
 {% block extra_css %}
 <style>
+    .payment-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .payment-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .payment-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .payment-progress {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .step-number.active {
+        background: #10B981;
+        color: white;
+    }
+    
+    .step-number.completed {
+        background: #3B82F6;
+        color: white;
+    }
+    
+    .step-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+    
+    .step-text.active {
+        color: #10B981;
+    }
+    
+    .step-text.completed {
+        color: #3B82F6;
+    }
+    
+    .progress-connector {
+        flex: 1;
+        height: 2px;
+        background: #e5e7eb;
+        max-width: 100px;
+    }
+    
+    .payment-content {
+        padding: 2rem;
+    }
+    
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
     .payment-method {
         border: 2px solid #e5e7eb;
         border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 12px;
+        padding: 1.5rem;
         cursor: pointer;
         transition: all 0.3s ease;
+        text-align: center;
     }
     
     .payment-method:hover {
         border-color: #3B82F6;
+        transform: translateY(-2px);
     }
     
     .payment-method.selected {
         border-color: #3B82F6;
-        background-color: #eff6ff;
+        background: #eff6ff;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+    }
+    
+    .payment-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #6b7280;
+    }
+    
+    .payment-method.selected .payment-icon {
+        color: #3B82F6;
     }
     
     .payment-details {
-        display: none;
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        animation: slideDown 0.3s ease;
     }
     
-    .payment-details.active {
+    .card-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group.full-width {
+        grid-column: span 2;
+    }
+    
+    .form-label {
         display: block;
-        animation: fadeIn 0.3s ease;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #374151;
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 6px;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .payment-summary {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .summary-label {
+        flex: 1;
+        color: #6b7280;
+    }
+    
+    .summary-value {
+        font-weight: 500;
+    }
+    
+    .summary-total {
+        border-top: 2px solid #e5e7eb;
+        padding-top: 1rem;
+        margin-top: 1rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #1f2937;
+    }
+    
+    .pay-button {
+        width: 100%;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.125rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 2rem;
+    }
+    
+    .pay-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    }
+    
+    .pay-button:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .security-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #e5e7eb;
+        border-top: 4px solid #3B82F6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .success-animation {
+        animation: successPulse 0.5s ease;
+    }
+    
+    @keyframes successPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-6 py-8">
+<div class="payment-container" x-data="paymentProcessor()">
+    <!-- Payment Header -->
+    <div class="payment-header">
+        <h1 class="text-2xl font-bold mb-2">Complete Your Payment</h1>
+        <p class="text-blue-100">Secure payment processed with bank-level encryption</p>
+    </div>
+
     <!-- Progress Steps -->
-    <div class="flex justify-center mb-8">
-        <div class="flex items-center">
-            <div class="w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center">
-                1
-            </div>
-            <div class="ml-2 text-sm font-medium text-primary-500">Booking Details</div>
+    <div class="payment-progress">
+        <div class="progress-step">
+            <div class="step-number completed">1</div>
+            <div class="step-text completed">Booking Details</div>
         </div>
-        
-        <div class="w-16 h-0.5 bg-primary-500 mx-2"></div>
-        
-        <div class="flex items-center">
-            <div class="w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center">
-                2
-            </div>
-            <div class="ml-2 text-sm font-medium text-primary-500">Payment</div>
+        <div class="progress-connector"></div>
+        <div class="progress-step">
+            <div class="step-number completed">2</div>
+            <div class="step-text completed">Guest Information</div>
         </div>
-        
-        <div class="w-16 h-0.5 bg-gray-300 mx-2"></div>
-        
-        <div class="flex items-center">
-            <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center">
-                3
-            </div>
-            <div class="ml-2 text-sm font-medium text-gray-600">Confirmation</div>
+        <div class="progress-connector"></div>
+        <div class="progress-step">
+            <div class="step-number active">3</div>
+            <div class="step-text active">Payment</div>
+        </div>
+        <div class="progress-connector"></div>
+        <div class="progress-step">
+            <div class="step-number">4</div>
+            <div class="step-text">Confirmation</div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
         <!-- Left Column - Payment Form -->
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                <h1 class="text-2xl font-bold text-gray-900 mb-6">Payment Information</h1>
-                
-                <form method="post" id="payment-form">
-                    {% csrf_token %}
+            <div class="payment-card">
+                <div class="payment-content">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Select Payment Method</h2>
                     
-                    <!-- Payment Method Selection -->
-                    <div class="mb-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Select Payment Method</h2>
-                        
-                        <div x-data="{ selectedMethod: '' }">
-                            {% for value, label in form.payment_method.field.choices %}
-                            <div class="payment-method" 
-                                 :class="{ 'selected': selectedMethod === '{{ value }}' }"
-                                 @click="selectedMethod = '{{ value }}'; document.getElementById('id_payment_method_{{ forloop.counter0 }}').checked = true;">
-                                <input type="radio" name="payment_method" id="id_payment_method_{{ forloop.counter0 }}" 
-                                       value="{{ value }}" class="hidden" 
-                                       {% if forloop.first %}checked{% endif %}>
-                                <label for="id_payment_method_{{ forloop.counter0 }}" class="flex items-center cursor-pointer">
-                                    <i class="fas 
-                                        {% if value == 'credit_card' %}fa-credit-card
-                                        {% elif value == 'debit_card' %}fa-credit-card
-                                        {% elif value == 'paypal' %}fa-paypal
-                                        {% elif value == 'bank_transfer' %}fa-university
-                                        {% endif %} 
-                                        text-primary-500 mr-3"></i>
-                                    <span class="font-medium">{{ label }}</span>
-                                </label>
+                    <!-- Payment Methods -->
+                    <div class="payment-methods">
+                        <div class="payment-method" 
+                             :class="{ 'selected': paymentMethod === 'credit_card' }"
+                             @click="paymentMethod = 'credit_card'">
+                            <div class="payment-icon">
+                                <i class="fas fa-credit-card"></i>
                             </div>
-                            {% endfor %}
+                            <h3 class="font-semibold mb-2">Credit Card</h3>
+                            <p class="text-sm text-gray-600">Visa, Mastercard, American Express</p>
+                        </div>
+                        
+                        <div class="payment-method" 
+                             :class="{ 'selected': paymentMethod === 'debit_card' }"
+                             @click="paymentMethod = 'debit_card'">
+                            <div class="payment-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <h3 class="font-semibold mb-2">Debit Card</h3>
+                            <p class="text-sm text-gray-600">All major debit cards</p>
+                        </div>
+                        
+                        <div class="payment-method" 
+                             :class="{ 'selected': paymentMethod === 'paypal' }"
+                             @click="paymentMethod = 'paypal'">
+                            <div class="payment-icon">
+                                <i class="fab fa-paypal"></i>
+                            </div>
+                            <h3 class="font-semibold mb-2">PayPal</h3>
+                            <p class="text-sm text-gray-600">Fast and secure</p>
                         </div>
                     </div>
 
-                    <!-- Card Details (shown only for card payments) -->
-                    <div x-data="{ showCardDetails: false }" x-show="showCardDetails" x-transition>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Card Details</h2>
+                    <!-- Card Payment Form -->
+                    <div x-show="paymentMethod === 'credit_card' || paymentMethod === 'debit_card'" 
+                         class="payment-details">
+                        <h3 class="font-semibold mb-4">Card Details</h3>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
-                                <input type="text" name="card_number" placeholder="1234 5678 9012 3456"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <div class="card-form">
+                            <div class="form-group full-width">
+                                <label class="form-label">Card Number</label>
+                                <input type="text" x-model="cardNumber" placeholder="1234 5678 9012 3456" 
+                                       class="form-input" @input="formatCardNumber()">
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Name on Card</label>
-                                <input type="text" name="name_on_card"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            
+                            <div class="form-group">
+                                <label class="form-label">Expiry Date</label>
+                                <input type="text" x-model="expiryDate" placeholder="MM/YY" 
+                                       class="form-input" @input="formatExpiryDate()" maxlength="5">
                             </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
-                                <input type="text" name="expiry_date" placeholder="MM/YYYY"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            
+                            <div class="form-group">
+                                <label class="form-label">CVV</label>
+                                <input type="text" x-model="cvv" placeholder="123" 
+                                       class="form-input" maxlength="4">
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                                <input type="text" name="cvv" placeholder="123"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            
+                            <div class="form-group full-width">
+                                <label class="form-label">Cardholder Name</label>
+                                <input type="text" x-model="cardholderName" placeholder="John Doe" 
+                                       class="form-input">
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 px-6 rounded-lg transition-colors mt-6">
-                        Complete Payment - ${{ booking.total_amount|floatformat:2 }}
+                    <!-- PayPal Info -->
+                    <div x-show="paymentMethod === 'paypal'" class="payment-details">
+                        <div class="text-center py-8">
+                            <i class="fab fa-paypal text-4xl text-blue-500 mb-4"></i>
+                            <p class="text-gray-600">You will be redirected to PayPal to complete your payment</p>
+                        </div>
+                    </div>
+
+                    <!-- Pay Button -->
+                    <button @click="processPayment()" :disabled="!isFormValid" 
+                            class="pay-button success-animation" x-bind:class="{ 'success-animation': isFormValid }">
+                        <span x-show="!isProcessing">Pay Now - ${{ booking.total_amount|floatformat:2 }}</span>
+                        <span x-show="isProcessing">Processing...</span>
                     </button>
-                </form>
-            </div>
-            
-            <!-- Security Notice -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="flex items-center">
-                    <i class="fas fa-shield-alt text-blue-500 mr-3"></i>
-                    <div>
-                        <h3 class="font-semibold text-blue-900">Secure Payment</h3>
-                        <p class="text-sm text-blue-700">Your payment information is encrypted and secure. We don't store your card details.</p>
+
+                    <!-- Security Badge -->
+                    <div class="security-badge">
+                        <i class="fas fa-lock"></i>
+                        <span>256-bit SSL Encryption | PCI DSS Compliant</span>
                     </div>
                 </div>
             </div>
@@ -154,98 +416,183 @@
 
         <!-- Right Column - Booking Summary -->
         <div class="lg:col-span-1">
-            <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-                <h2 class="text-lg font-semibold text-gray-900 mb-6">Booking Summary</h2>
-                
-                <div class="flex items-start gap-3 mb-4">
-                    {% if booking.room.property.images.first %}
-                    <img src="{{ booking.room.property.images.first.image.url }}" 
-                         alt="{{ booking.room.property.name }}"
-                         class="w-16 h-16 object-cover rounded-lg">
-                    {% else %}
-                    <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-image text-gray-400"></i>
-                    </div>
-                    {% endif %}
+            <div class="payment-card">
+                <div class="payment-content">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Booking Summary</h2>
                     
-                    <div>
-                        <h3 class="font-semibold text-gray-900">{{ booking.room.property.name }}</h3>
-                        <p class="text-sm text-gray-600">{{ booking.room.property.city }}</p>
-                        <p class="text-sm text-gray-600">{{ booking.room.get_room_type_display }}</p>
-                    </div>
-                </div>
-                
-                <div class="space-y-3 border-t border-gray-200 pt-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Check-in</span>
-                        <span class="font-medium">{{ booking.check_in_date|date:"M d, Y" }}</span>
+                    <div class="flex items-start gap-4 mb-6">
+                        {% if booking.room.property.images.first %}
+                        <img src="{{ booking.room.property.images.first.image.url }}" 
+                             alt="{{ booking.room.property.name }}"
+                             class="w-16 h-16 object-cover rounded-lg">
+                        {% else %}
+                        <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ booking.room.property.name }}</h3>
+                            <p class="text-sm text-gray-600">{{ booking.room.property.city }}</p>
+                            <p class="text-sm text-gray-600">{{ booking.room.get_room_type_display }}</p>
+                        </div>
                     </div>
                     
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Check-out</span>
-                        <span class="font-medium">{{ booking.check_out_date|date:"M d, Y" }}</span>
+                    <div class="space-y-3 mb-6">
+                        <div class="summary-item">
+                            <span class="summary-label">Check-in</span>
+                            <span class="summary-value">{{ booking.check_in_date|date:"M d, Y" }}</span>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <span class="summary-label">Check-out</span>
+                            <span class="summary-value">{{ booking.check_out_date|date:"M d, Y" }}</span>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <span class="summary-label">Guests</span>
+                            <span class="summary-value">{{ booking.guests }} guest{{ booking.guests|pluralize }}</span>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <span class="summary-label">Nights</span>
+                            <span class="summary-value">{{ booking.total_nights }}</span>
+                        </div>
                     </div>
                     
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Guests</span>
-                        <span class="font-medium">{{ booking.guests }} guest{{ booking.guests|pluralize }}</span>
+                    <div class="payment-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Room rate</span>
+                            <span class="summary-value">${{ booking.room.price_per_night|floatformat:2 }} × {{ booking.total_nights }}</span>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <span class="summary-label">Service fee</span>
+                            <span class="summary-value">$15.00</span>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <span class="summary-label">Tax</span>
+                            <span class="summary-value">${{ booking.total_amount|multiply:0.08|floatformat:2 }}</span>
+                        </div>
+                        
+                        <div class="summary-total">
+                            <span>Total: ${{ booking.total_amount|add:15|add:booking.total_amount|multiply:0.08|floatformat:2 }}</span>
+                        </div>
                     </div>
                     
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Nights</span>
-                        <span class="font-medium">{{ booking.total_nights }}</span>
+                    <!-- Cancellation Policy -->
+                    <div class="mt-6 p-4 bg-green-50 rounded-lg">
+                        <h3 class="font-semibold text-green-900 mb-2">Cancellation Policy</h3>
+                        <p class="text-sm text-green-700">
+                            Free cancellation for 48 hours. After that, cancel up to 7 days before check-in and get a 50% refund.
+                        </p>
                     </div>
-                </div>
-                
-                <div class="space-y-3 border-t border-gray-200 pt-4 mt-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Room rate</span>
-                        <span class="font-medium">${{ booking.room.price_per_night|floatformat:2 }} x {{ booking.total_nights }}</span>
-                    </div>
-                    
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Service fee</span>
-                        <span class="font-medium">$15.00</span>
-                    </div>
-                    
-                    <div class="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-3">
-                        <span>Total</span>
-                        <span class="text-primary-500">${{ booking.total_amount|floatformat:2 }}</span>
-                    </div>
-                </div>
-                
-                <!-- Cancellation Policy -->
-                <div class="mt-6 p-4 bg-green-50 rounded-lg">
-                    <h3 class="font-semibold text-green-900 mb-2">Cancellation Policy</h3>
-                    <p class="text-sm text-green-700">
-                        Free cancellation for 48 hours. After that, cancel up to 7 days before check-in and get a 50% refund.
-                    </p>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div x-show="isProcessing" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p class="text-lg font-semibold text-gray-700">Processing your payment...</p>
+        <p class="text-sm text-gray-600">Please don't close this window</p>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('alpine:init', () => {
-        // Show/hide card details based on payment method
-        const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
-        const cardDetails = document.querySelector('[x-data]');
-        
-        paymentMethods.forEach(method => {
-            method.addEventListener('change', function() {
-                const showCardDetails = this.value === 'credit_card' || this.value === 'debit_card';
-                cardDetails.__x.$data.showCardDetails = showCardDetails;
-            });
-        });
-        
-        // Trigger change event on first load
-        const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
-        if (selectedMethod) {
-            selectedMethod.dispatchEvent(new Event('change'));
+    function paymentProcessor() {
+        return {
+            paymentMethod: 'credit_card',
+            cardNumber: '',
+            expiryDate: '',
+            cvv: '',
+            cardholderName: '',
+            isProcessing: false,
+            
+            get isFormValid() {
+                if (this.paymentMethod === 'credit_card' || this.paymentMethod === 'debit_card') {
+                    return this.cardNumber.replace(/\s/g, '').length === 16 &&
+                           this.expiryDate.length === 5 &&
+                           this.cvv.length >= 3 &&
+                           this.cardholderName.length > 0;
+                }
+                return true; // For PayPal, no validation needed
+            },
+            
+            formatCardNumber() {
+                // Remove all non-digit characters
+                let numbers = this.cardNumber.replace(/\D/g, '');
+                
+                // Limit to 16 digits
+                numbers = numbers.substring(0, 16);
+                
+                // Add spaces every 4 digits
+                this.cardNumber = numbers.replace(/(\d{4})/g, '$1 ').trim();
+            },
+            
+            formatExpiryDate() {
+                // Remove all non-digit characters
+                let numbers = this.expiryDate.replace(/\D/g, '');
+                
+                // Limit to 4 digits
+                numbers = numbers.substring(0, 4);
+                
+                // Add slash after 2 digits
+                if (numbers.length > 2) {
+                    this.expiryDate = numbers.substring(0, 2) + '/' + numbers.substring(2);
+                } else {
+                    this.expiryDate = numbers;
+                }
+            },
+            
+            async processPayment() {
+                if (!this.isFormValid) return;
+                
+                this.isProcessing = true;
+                
+                try {
+                    // Simulate payment processing delay
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    // Simulate 90% success rate
+                    const success = Math.random() < 0.9;
+                    
+                    if (success) {
+                        // Submit the form
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '';
+                        
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = csrfToken;
+                        form.appendChild(csrfInput);
+                        
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = 'payment_method';
+                        methodInput.value = this.paymentMethod;
+                        form.appendChild(methodInput);
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    } else {
+                        // Simulate payment failure
+                        alert('Payment failed. Please try again with a different payment method.');
+                        this.isProcessing = false;
+                    }
+                } catch (error) {
+                    alert('An error occurred during payment processing. Please try again.');
+                    this.isProcessing = false;
+                }
+            }
         }
-    });
+    }
 </script>
 {% endblock %}

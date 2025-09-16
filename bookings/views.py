@@ -141,6 +141,7 @@ def create_booking(request):
 
 
 # bookings/views.py - Update payment view
+# bookings/views.py - Update payment view
 @login_required
 def payment(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
@@ -150,43 +151,44 @@ def payment(request, booking_id):
         return redirect('bookings:booking_detail', pk=booking_id)
     
     if request.method == 'POST':
-        form = PaymentForm(request.POST)
-        if form.is_valid():
-            # Process payment (simulated)
-            payment_method = form.cleaned_data['payment_method']
+        payment_method = request.POST.get('payment_method', 'credit_card')
+        
+        # Simulate payment processing with a small chance of failure
+        import random
+        import time
+        
+        # Simulate processing delay
+        time.sleep(2)
+        
+        # 90% success rate
+        payment_successful = random.random() < 0.9
+        
+        if payment_successful:
+            # Update booking status
+            booking.status = 'confirmed'
+            booking.save()
             
-            # Simulate payment processing
-            import random
-            payment_successful = random.choice([True, True, True, False])  # 75% success rate
+            # Create payment record
+            Payment.objects.create(
+                booking=booking,
+                payment_method=payment_method,
+                amount=booking.total_amount,
+                status='completed',
+                transaction_id=f"TXN{random.randint(100000, 999999)}",
+                payment_date=timezone.now()
+            )
             
-            if payment_successful:
-                # Update booking status
-                booking.status = 'confirmed'
-                booking.save()
-                
-                # Create payment record
-                Payment.objects.create(
-                    booking=booking,
-                    payment_method=payment_method,
-                    amount=booking.total_amount,
-                    status='completed',
-                    transaction_id=f"TXN{random.randint(100000, 999999)}",
-                    payment_date=timezone.now()
-                )
-                
-                messages.success(request, 'Payment successful! Your booking is confirmed.')
-                return redirect('bookings:booking_detail', pk=booking_id)
-            else:
-                messages.error(request, 'Payment failed. Please try again or use a different payment method.')
-                return redirect('bookings:payment', booking_id=booking_id)
-    else:
-        form = PaymentForm()
+            messages.success(request, 'Payment successful! Your booking is confirmed.')
+            return redirect('bookings:booking_detail', pk=booking_id)
+        else:
+            messages.error(request, 'Payment failed. Please try again or use a different payment method.')
+            return redirect('bookings:payment', booking_id=booking_id)
     
     return render(request, 'bookings/payment.html', {
-        'form': form,
         'booking': booking
     })
-    
+
+
 @login_required
 def booking_detail(request, pk):
     booking = get_object_or_404(Booking, pk=pk, user=request.user)

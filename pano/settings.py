@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
 
+    'properties.templatetags.math_filters',
+
+
     'django.contrib.sites',
 
     # Third party apps
