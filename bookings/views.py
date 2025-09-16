@@ -7,87 +7,185 @@ from django.utils.decorators import method_decorator
 from django.db.models import Q
 from properties.models import Room
 from .models import Booking, Payment
-from .forms import BookingForm
+from .forms import BookingForm, PaymentForm
 from datetime import datetime, timedelta
+from django.utils import timezone
 
-# views.py - Update create_booking view
+
+# bookings/views.py - Update create_booking view
 @login_required
 def create_booking(request):
-    room_type = request.GET.get('room_type')
-    check_in_date = request.GET.get('check_in')
-    check_out_date = request.GET.get('check_out')
-    guests = request.GET.get('guests')
-    property_id = request.GET.get('property_id')
-    
-    if not all([room_type, check_in_date, check_out_date, guests, property_id]):
-        messages.error(request, 'Missing booking information.')
-        return redirect('properties:property_detail', pk=property_id)
-    
-    try:
-        # Find the first available room of the selected type
-        room = Room.objects.filter(
-            property_id=property_id,
-            room_type=room_type,
-            is_available=True
-        ).first()
+    if request.method == 'POST':
+        # Get parameters from POST data
+        room_id = request.POST.get('room_id')
+        check_in_str = request.POST.get('check_in')
+        check_out_str = request.POST.get('check_out')
+        guests = request.POST.get('guests', 1)
+        property_id = request.POST.get('property_id')
         
-        if not room:
-            messages.error(request, 'No rooms available of the selected type.')
+        if not all([room_id, check_in_str, check_out_str, property_id]):
+            messages.error(request, 'Missing booking information.')
             return redirect('properties:property_detail', pk=property_id)
         
-        # Check if room is actually available for the dates
-        check_in = datetime.strptime(check_in_date, '%Y-%m-%d').date()
-        check_out = datetime.strptime(check_out_date, '%Y-%m-%d').date()
+        try:
+            room = Room.objects.get(id=room_id)
+            check_in = datetime.strptime(check_in_str, '%Y-%m-%d').date()
+            check_out = datetime.strptime(check_out_str, '%Y-%m-%d').date()
+            
+            # Check availability
+            conflicting_bookings = Booking.objects.filter(
+                room=room,
+                status__in=['confirmed', 'pending'],
+                check_in_date__lt=check_out,
+                check_out_date__gt=check_in
+            )
+            
+            if conflicting_bookings.exists():
+                messages.error(request, 'Room is no longer available for the selected dates.')
+                return redirect('properties:property_detail', pk=property_id)
+            
+            # Create booking
+            booking = Booking(
+                user=request.user,
+                room=room,
+                check_in_date=check_in,
+                check_out_date=check_out,
+                guests=int(guests),
+                guest_name=f"{request.POST.get('guest_first_name', '')} {request.POST.get('guest_last_name', '')}".strip(),
+                guest_email=request.POST.get('guest_email', ''),
+                guest_phone=request.POST.get('guest_phone', ''),
+                special_requests=request.POST.get('special_requests', ''),
+                status='pending'
+            )
+            
+            # Calculate totals (this will be done again in save() but we need it for redirect)
+            booking.total_nights = (check_out - check_in).days
+            booking.total_amount = room.price_per_night * booking.total_nights
+            
+            # Save booking
+            booking.save()
+            
+            # Redirect to payment page
+            return redirect('bookings:payment', booking_id=booking.id)
+            
+        except Exception as e:
+            messages.error(request, f'Error creating booking: {str(e)}')
+            return redirect('properties:property_detail', pk=property_id)
+    
+    else:
+        # GET request - show booking form
+        room_type = request.GET.get('room_type')
+        check_in_str = request.GET.get('check_in')
+        check_out_str = request.GET.get('check_out')
+        guests = request.GET.get('guests', 1)
+        property_id = request.GET.get('property_id')
         
-        conflicting_bookings = Booking.objects.filter(
-            room=room,
-            status__in=['confirmed', 'pending'],
-            check_in_date__lt=check_out,
-            check_out_date__gt=check_in
-        )
-        
-        if conflicting_bookings.exists():
-            messages.error(request, 'Room is no longer available for the selected dates.')
+        if not all([room_type, check_in_str, check_out_str, property_id]):
+            messages.error(request, 'Missing booking information.')
             return redirect('properties:property_detail', pk=property_id)
         
-        if request.method == 'POST':
-            form = BookingForm(request.POST)
-            if form.is_valid():
-                booking = form.save(commit=False)
-                booking.user = request.user
-                booking.room = room
-                booking.check_in_date = check_in
-                booking.check_out_date = check_out
-                booking.guests = int(guests)
-                booking.save()
-                
-                messages.success(request, 'Booking created successfully!')
-                return redirect('bookings:booking_detail', pk=booking.pk)
-        else:
+        try:
+            # Find the first available room of the selected type
+            room = Room.objects.filter(
+                property_id=property_id,
+                room_type=room_type,
+                is_available=True
+            ).first()
+            
+            if not room:
+                messages.error(request, 'No rooms available of the selected type.')
+                return redirect('properties:property_detail', pk=property_id)
+            
+            # Parse dates
+            check_in = datetime.strptime(check_in_str, '%Y-%m-%d').date()
+            check_out = datetime.strptime(check_out_str, '%Y-%m-%d').date()
+            
+            # Check availability
+            conflicting_bookings = Booking.objects.filter(
+                room=room,
+                status__in=['confirmed', 'pending'],
+                check_in_date__lt=check_out,
+                check_out_date__gt=check_in
+            )
+            
+            if conflicting_bookings.exists():
+                messages.error(request, 'Room is no longer available for the selected dates.')
+                return redirect('properties:property_detail', pk=property_id)
+            
             # Pre-fill form with available data
             initial_data = {
-                'check_in_date': check_in_date,
-                'check_out_date': check_out_date,
-                'guests': guests,
-                'guest_name': request.user.get_full_name() or request.user.username,
+                'guest_first_name': request.user.first_name or '',
+                'guest_last_name': request.user.last_name or '',
                 'guest_email': request.user.email,
+                'guest_phone': '',
+                'special_requests': ''
             }
-            form = BookingForm(initial=initial_data)
-        
-        return render(request, 'bookings/booking_form.html', {
-            'form': form,
-            'room': room,
-            'check_in': check_in_date,
-            'check_out': check_out_date,
-            'guests': guests,
-            'total_nights': (check_out - check_in).days,
-            'total_amount': room.price_per_night * (check_out - check_in).days
-        })
-        
-    except Exception as e:
-        messages.error(request, f'Error creating booking: {str(e)}')
-        return redirect('properties:property_detail', pk=property_id)
+            
+            total_nights = (check_out - check_in).days
+            total_amount = float(room.price_per_night) * total_nights
+            
+            return render(request, 'bookings/booking_form.html', {
+                'form': BookingForm(initial=initial_data),
+                'room': room,
+                'check_in': check_in_str,
+                'check_out': check_out_str,
+                'guests': guests,
+                'total_nights': total_nights,
+                'total_amount': total_amount,
+                'property_id': property_id
+            })
+            
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return redirect('properties:property_detail', pk=property_id)
+
+
+# bookings/views.py - Update payment view
+@login_required
+def payment(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
     
+    if booking.status != 'pending':
+        messages.error(request, 'This booking cannot be paid for.')
+        return redirect('bookings:booking_detail', pk=booking_id)
+    
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            # Process payment (simulated)
+            payment_method = form.cleaned_data['payment_method']
+            
+            # Simulate payment processing
+            import random
+            payment_successful = random.choice([True, True, True, False])  # 75% success rate
+            
+            if payment_successful:
+                # Update booking status
+                booking.status = 'confirmed'
+                booking.save()
+                
+                # Create payment record
+                Payment.objects.create(
+                    booking=booking,
+                    payment_method=payment_method,
+                    amount=booking.total_amount,
+                    status='completed',
+                    transaction_id=f"TXN{random.randint(100000, 999999)}",
+                    payment_date=timezone.now()
+                )
+                
+                messages.success(request, 'Payment successful! Your booking is confirmed.')
+                return redirect('bookings:booking_detail', pk=booking_id)
+            else:
+                messages.error(request, 'Payment failed. Please try again or use a different payment method.')
+                return redirect('bookings:payment', booking_id=booking_id)
+    else:
+        form = PaymentForm()
+    
+    return render(request, 'bookings/payment.html', {
+        'form': form,
+        'booking': booking
+    })
     
 @login_required
 def booking_detail(request, pk):
@@ -182,6 +280,8 @@ from django.http import JsonResponse
 import json
 from datetime import datetime
 
+# bookings/views.py
+# bookings/views.py - Update check_availability view
 def check_availability(request):
     room_type = request.GET.get('room_type')
     check_in = request.GET.get('check_in')
@@ -216,7 +316,7 @@ def check_availability(request):
                 total_nights = (check_out_date - check_in_date).days
                 return JsonResponse({
                     'available': True,
-                    'room_id': room.id,
+                    'room_id': room.id,  # Add room_id to response
                     'price': float(room.price_per_night),
                     'total_nights': total_nights
                 })

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-8">
+    <h1 class="text-2xl font-bold text-gray-900 mb-8">My Bookings</h1>
+    
+    {% if bookings %}
+        <div class="grid grid-cols-1 gap-6">
+            {% for booking in bookings %}
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                    <!-- Booking Info -->
+                    <div class="flex-1">
+                        <div class="flex items-start gap-4">
+                            {% if booking.room.property.images.first %}
+                            <img src="{{ booking.room.property.images.first.image.url }}" 
+                                 alt="{{ booking.room.property.name }}"
+                                 class="w-20 h-20 object-cover rounded-lg">
+                            {% else %}
+                            <div class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-image text-gray-400"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="flex-1">
+                                <h2 class="text-lg font-semibold text-gray-900">{{ booking.room.property.name }}</h2>
+                                <p class="text-gray-600">{{ booking.room.property.city }}, {{ booking.room.property.country }}</p>
+                                
+                                <div class="flex flex-wrap gap-4 mt-2">
+                                    <span class="inline-flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-calendar-alt mr-2"></i>
+                                        {{ booking.check_in_date|date:"M d" }} - {{ booking.check_out_date|date:"M d, Y" }}
+                                    </span>
+                                    <span class="inline-flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-user mr-2"></i>
+                                        {{ booking.guests }} guest{{ booking.guests|pluralize }}
+                                    </span>
+                                    <span class="inline-flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-bed mr-2"></i>
+                                        {{ booking.room.get_room_type_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Booking Status and Actions -->
+                    <div class="mt-4 lg:mt-0 lg:text-right">
+                        <div class="mb-3">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                        {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
+                                        {% elif booking.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% elif booking.status == 'cancelled' %}bg-red-100 text-red-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <p class="text-lg font-bold text-primary-500">${{ booking.total_amount|floatformat:2 }}</p>
+                        
+                        <div class="mt-3 flex gap-2">
+                            <a href="{% url 'bookings:booking_detail' booking.id %}" 
+                               class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                                View Details
+                            </a>
+                            
+                            {% if booking.status == 'pending' or booking.status == 'confirmed' %}
+                            <form method="post" action="{% url 'bookings:cancel_booking' booking.id %}">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        class="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors"
+                                        onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                    Cancel
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-16">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-calendar-check text-gray-400 text-3xl"></i>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">No bookings yet</h2>
+            <p class="text-gray-600 mb-6">Start exploring properties to make your first booking.</p>
+            <a href="{% url 'properties:property_list' %}" class="bg-primary-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-600 transition-colors">
+                Browse Properties
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

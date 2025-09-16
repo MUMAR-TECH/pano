@@ -26,4 +26,7 @@ urlpatterns = [
 
     path('', views.HomeView.as_view(), name='home'),  # Add this line
     path('properties/', views.PropertyListView.as_view(), name='property_list'),
+
+    # urls.py - Add this pattern
+    path('availability/check/', views.check_availability, name='check_availability'),
 ]

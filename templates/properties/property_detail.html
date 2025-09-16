@@ -566,6 +566,7 @@
                 return new Date().toISOString().split('T')[0];
             },
             
+            // In the bookingWidget() function, update the checkAvailability method:
             async checkAvailability() {
                 if (!this.selectedRoomType || !this.checkInDate || !this.checkOutDate) {
                     this.availabilityStatus = 'select_dates';
@@ -576,7 +577,14 @@
                 this.loading = true;
                 
                 try {
-                    const response = await fetch(`/bookings/availability/check/?room_type=${this.selectedRoomType}&check_in=${this.checkInDate}&check_out=${this.checkOutDate}&property_id={{ property.id }}`);
+                    const params = new URLSearchParams({
+                        room_type: this.selectedRoomType,
+                        check_in: this.checkInDate,
+                        check_out: this.checkOutDate,
+                        property_id: '{{ property.id }}'
+                    });
+                    
+                    const response = await fetch(`/bookings/availability/check/?${params.toString()}`);
                     const data = await response.json();
                     
                     if (data.available) {
@@ -584,6 +592,7 @@
                         this.availabilityMessage = 'Room is available for selected dates!';
                         this.roomPrice = data.price;
                         this.totalNights = data.total_nights;
+                        this.roomId = data.room_id;  // Store room_id for later use
                     } else {
                         this.availabilityStatus = 'unavailable';
                         this.availabilityMessage = 'Room is not available for selected dates. Please try different dates.';
@@ -594,6 +603,7 @@
                 }
                 
                 this.loading = false;
+                return data;  // Return the data for chaining
             },
             
             selectDate(day) {
@@ -608,9 +618,17 @@
                 }
             },
             
+            // In the bookingWidget() function, update the reserveRoom method:
             reserveRoom() {
                 if (this.availabilityStatus === 'available') {
-                    window.location.href = `/bookings/create/room?room_type=${this.selectedRoomType}&check_in=${this.checkInDate}&check_out=${this.checkOutDate}&guests=${this.guests}&property_id={{ property.id }}`;
+                    const params = new URLSearchParams({
+                        room_type: this.selectedRoomType,
+                        check_in: this.checkInDate,
+                        check_out: this.checkOutDate,
+                        guests: this.guests,
+                        property_id: '{{ property.id }}'
+                    });
+                    window.location.href = `/bookings/create/?${params.toString()}`;
                 }
             },
             

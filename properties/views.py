@@ -131,6 +131,60 @@ class PropertyDetailView(DetailView):
         context['calendar_end'] = next_month
         
         return context
+    
+
+    
+
+# views.py - Add this view
+from django.http import JsonResponse
+import json
+from datetime import datetime
+
+def check_availability(request):
+    room_type = request.GET.get('room_type')
+    check_in = request.GET.get('check_in')
+    check_out = request.GET.get('check_out')
+    property_id = request.GET.get('property_id')
+    
+    if not all([room_type, check_in, check_out, property_id]):
+        return JsonResponse({'error': 'Missing parameters'}, status=400)
+    
+    try:
+        check_in_date = datetime.strptime(check_in, '%Y-%m-%d').date()
+        check_out_date = datetime.strptime(check_out, '%Y-%m-%d').date()
+        
+        # Find available rooms of the selected type
+        available_rooms = Room.objects.filter(
+            property_id=property_id,
+            room_type=room_type,
+            is_available=True
+        )
+        
+        # Check for conflicting bookings
+        for room in available_rooms:
+            conflicting_bookings = Booking.objects.filter(
+                room=room,
+                status__in=['confirmed', 'pending'],
+                check_in_date__lt=check_out_date,
+                check_out_date__gt=check_in_date
+            )
+            
+            if not conflicting_bookings.exists():
+                # Room is available
+                total_nights = (check_out_date - check_in_date).days
+                return JsonResponse({
+                    'available': True,
+                    'room_id': room.id,
+                    'price': float(room.price_per_night),
+                    'total_nights': total_nights
+                })
+        
+        return JsonResponse({'available': False})
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+    
+
 
 
 #@method_decorator(login_required, name='dispatch')

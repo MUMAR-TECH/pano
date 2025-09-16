@@ -1,0 +1,139 @@
+<!-- bookings/booking_form.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-8">
+    <!-- Back to Property Link -->
+    <a href="{% url 'properties:property_detail' property_id %}" class="inline-flex items-center text-primary-500 hover:text-primary-600 mb-6">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to property
+    </a>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Booking Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Complete Your Booking</h1>
+                
+                <!-- Your Trip Summary -->
+                <div class="mb-8">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Your Trip</h2>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-900">{{ room.property.name }}</h3>
+                        <p class="text-gray-600">{{ room.property.city }}, {{ room.property.country }}</p>
+                        
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Check-in</p>
+                                <p class="font-semibold">{{ check_in }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Check-out</p>
+                                <p class="font-semibold">{{ check_out }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Guests</p>
+                                <p class="font-semibold">{{ guests }} guest{{ guests|pluralize }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Nights</p>
+                                <p class="font-semibold">{{ total_nights }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Room Type</p>
+                                <p class="font-semibold">{{ room.get_room_type_display }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guest Information Form -->
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Hidden fields for booking parameters -->
+                    <input type="hidden" name="room_id" value="{{ room.id }}">
+                    <input type="hidden" name="room_type" value="{{ room.room_type }}">
+                    <input type="hidden" name="check_in" value="{{ check_in }}">
+                    <input type="hidden" name="check_out" value="{{ check_out }}">
+                    <input type="hidden" name="guests" value="{{ guests }}">
+                    <input type="hidden" name="property_id" value="{{ property_id }}">
+                    
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Guest Information</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                            <input type="text" name="guest_first_name" value="{{ form.guest_first_name.value }}" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                            <input type="text" name="guest_last_name" value="{{ form.guest_last_name.value }}" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" name="guest_email" value="{{ form.guest_email.value }}" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                        <input type="tel" name="guest_phone" value="{{ form.guest_phone.value }}" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Special Requests (Optional)</label>
+                        <textarea name="special_requests" rows="3"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                  placeholder="Any special requests or notes...">{{ form.special_requests.value }}</textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+                        Continue to Payment
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Column - Booking Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6">Booking Summary</h2>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">${{ room.price_per_night }} x {{ total_nights }} nights</span>
+                        <span class="font-semibold">${{ room.price_per_night|floatformat:2 }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Service fee</span>
+                        <span class="font-semibold">$15.00</span>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between items-center text-lg font-bold">
+                            <span>Total</span>
+                            <span class="text-primary-500">${{ total_amount|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cancellation Policy -->
+                <div class="mt-6 p-4 bg-green-50 rounded-lg">
+                    <h3 class="font-semibold text-green-900 mb-2">Cancellation Policy</h3>
+                    <p class="text-sm text-green-700">
+                        Free cancellation for 48 hours. After that, cancel up to 7 days before check-in and get a 50% refund.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
