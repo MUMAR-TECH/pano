@@ -102,6 +102,11 @@ class PropertyListView(ListView):
             
         return queryset
 
+# views.py - Update PropertyDetailView
+from datetime import datetime, timedelta
+from django.utils import timezone
+from django.db.models import Q
+
 class PropertyDetailView(DetailView):
     model = Property
     template_name = 'properties/property_detail.html'
@@ -112,7 +117,21 @@ class PropertyDetailView(DetailView):
         context['rooms'] = self.object.room_set.filter(is_available=True)
         context['reviews'] = self.object.reviews.all().order_by('-created_at')
         context['avg_rating'] = self.object.reviews.aggregate(Avg('rating'))['rating__avg']
+        
+        # Get unique room types
+        room_types = self.object.room_set.filter(is_available=True).values(
+            'room_type', 'name'
+        ).distinct()
+        context['room_types'] = room_types
+        
+        # Generate calendar data for next two months
+        today = timezone.now().date()
+        next_month = today + timedelta(days=60)
+        context['calendar_start'] = today
+        context['calendar_end'] = next_month
+        
         return context
+
 
 #@method_decorator(login_required, name='dispatch')
 class PropertyCreateView(CreateView):

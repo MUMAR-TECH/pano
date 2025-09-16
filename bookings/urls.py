@@ -11,4 +11,6 @@ urlpatterns = [
     path('vendor/', views.vendor_bookings, name='vendor_bookings'),
     path('<int:pk>/confirm/', views.confirm_booking, name='confirm_booking'),
     path('availability/<int:room_id>/', views.room_availability, name='room_availability'),
+    # urls.py - Add this pattern
+    path('availability/check/', views.check_availability, name='check_availability'),
 ]
